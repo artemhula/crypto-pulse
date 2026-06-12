@@ -4,10 +4,16 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/api-e2e"
+      "path": "./apps/api"
     },
     {
-      "path": "./apps/api"
+      "path": "./apps/cron-parser"
+    },
+    {
+      "path": "./libs/db"
+    },
+    {
+      "path": "./libs/coin"
     }
   ]
 }
