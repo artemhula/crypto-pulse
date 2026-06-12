@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Coin {
+  id           String   @id
+  symbol       String   @unique
+  name         String
+  currentPrice Float
+  image        String?
+  updatedAt    DateTime @updatedAt
+}
