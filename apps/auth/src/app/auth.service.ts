@@ -1,5 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '@crypto-pulse/db';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
 interface OAuthUserPayload {
   email: string;
@@ -11,7 +12,10 @@ interface OAuthUserPayload {
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly amqpConnection: AmqpConnection,
+  ) {}
 
   async loginOrRegisterOAuth(payload: OAuthUserPayload) {
     const userByAccount = await this.findUserByAccount(
@@ -19,6 +23,10 @@ export class AuthService {
       payload.providerAccountId,
     );
     if (userByAccount) {
+      this.amqpConnection.publish('auth.exchange', 'auth.user.login', {
+        userId: userByAccount.id,
+        provider: payload.provider,
+      });
       return userByAccount;
     }
 
@@ -33,7 +41,7 @@ export class AuthService {
       include: { user: true },
     });
 
-    return account ? account.user : null;
+    return account?.user ?? null;
   }
 
   private async handleUserLinkOrCreate(payload: OAuthUserPayload) {
@@ -70,7 +78,7 @@ export class AuthService {
   }
 
   private async createNewUserWithAccount(payload: OAuthUserPayload) {
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         email: payload.email,
         name: payload.name,
@@ -83,5 +91,13 @@ export class AuthService {
         },
       },
     });
+
+    this.amqpConnection.publish('auth.exchange', 'auth.user.created', {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+    });
+
+    return user;
   }
 }
