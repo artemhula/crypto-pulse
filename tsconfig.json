@@ -20,6 +20,9 @@
     },
     {
       "path": "./libs/rabbitmq-common"
+    },
+    {
+      "path": "./apps/alert"
     }
   ]
 }
