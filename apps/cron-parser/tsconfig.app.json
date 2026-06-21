@@ -16,6 +16,9 @@
     },
     {
       "path": "../../libs/rabbitmq-common/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/redis/tsconfig.lib.json"
     }
   ]
 }
