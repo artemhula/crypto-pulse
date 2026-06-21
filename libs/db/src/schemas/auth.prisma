@@ -8,6 +8,7 @@ model User {
   
   accounts  Account[]
   sessions  Session[]
+  alerts    Alert[]
 }
 
 model Account {

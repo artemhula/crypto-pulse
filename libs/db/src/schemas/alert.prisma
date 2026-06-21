@@ -1,0 +1,37 @@
+model Alert {
+  id           String        @id @default(uuid())
+  userId       String        @map("user_id")
+  ticker       String        
+  targetPrice  Decimal       @map("target_price") @db.Decimal(18, 8)
+  condition    AlertCondition 
+  isTriggered  Boolean       @default(false) @map("is_triggered")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  
+  expiresAt    DateTime?     @map("expires_at") 
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channels     NotificationChannel[]
+
+  @@map("crypto_alerts")
+}
+
+model NotificationChannel {
+  id        String      @id @default(uuid())
+  alertId   String      @map("alert_id")
+  type      ChannelType
+
+  alert     Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@map("notification_channels")
+}
+
+enum AlertCondition {
+  ABOVE
+  BELOW
+}
+
+enum ChannelType {
+  TELEGRAM
+  DISCORD
+  EMAIL
+}

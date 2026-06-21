@@ -51,6 +51,8 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  Alert: 'Alert',
+  NotificationChannel: 'NotificationChannel',
   User: 'User',
   Account: 'Account',
   Session: 'Session',
@@ -71,6 +73,29 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const AlertScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  ticker: 'ticker',
+  targetPrice: 'targetPrice',
+  condition: 'condition',
+  isTriggered: 'isTriggered',
+  createdAt: 'createdAt',
+  expiresAt: 'expiresAt'
+} as const
+
+export type AlertScalarFieldEnum = (typeof AlertScalarFieldEnum)[keyof typeof AlertScalarFieldEnum]
+
+
+export const NotificationChannelScalarFieldEnum = {
+  id: 'id',
+  alertId: 'alertId',
+  type: 'type'
+} as const
+
+export type NotificationChannelScalarFieldEnum = (typeof NotificationChannelScalarFieldEnum)[keyof typeof NotificationChannelScalarFieldEnum]
 
 
 export const UserScalarFieldEnum = {

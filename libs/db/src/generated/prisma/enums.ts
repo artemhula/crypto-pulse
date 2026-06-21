@@ -9,7 +9,18 @@
 * 🟢 You can import this file directly.
 */
 
+export const AlertCondition = {
+  ABOVE: 'ABOVE',
+  BELOW: 'BELOW'
+} as const
+
+export type AlertCondition = (typeof AlertCondition)[keyof typeof AlertCondition]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const ChannelType = {
+  TELEGRAM: 'TELEGRAM',
+  DISCORD: 'DISCORD',
+  EMAIL: 'EMAIL'
+} as const
+
+export type ChannelType = (typeof ChannelType)[keyof typeof ChannelType]
