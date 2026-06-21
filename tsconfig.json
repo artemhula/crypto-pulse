@@ -23,6 +23,9 @@
     },
     {
       "path": "./apps/alert"
+    },
+    {
+      "path": "./libs/redis"
     }
   ]
 }
