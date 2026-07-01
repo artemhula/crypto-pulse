@@ -1,4 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@crypto-pulse/db';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
@@ -10,14 +11,26 @@ interface OAuthUserPayload {
   providerAccountId: string;
 }
 
+export interface AuthResponse {
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+    avatarUrl: string | null;
+  };
+  accessToken: string;
+  tokenType: 'Bearer';
+}
+
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly amqpConnection: AmqpConnection,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async loginOrRegisterOAuth(payload: OAuthUserPayload) {
+  async loginOrRegisterOAuth(payload: OAuthUserPayload): Promise<AuthResponse> {
     const userByAccount = await this.findUserByAccount(
       payload.provider,
       payload.providerAccountId,
@@ -27,7 +40,7 @@ export class AuthService {
         userId: userByAccount.id,
         provider: payload.provider,
       });
-      return userByAccount;
+      return this.createAuthResponse(userByAccount);
     }
 
     return this.handleUserLinkOrCreate(payload);
@@ -44,7 +57,9 @@ export class AuthService {
     return account?.user ?? null;
   }
 
-  private async handleUserLinkOrCreate(payload: OAuthUserPayload) {
+  private async handleUserLinkOrCreate(
+    payload: OAuthUserPayload,
+  ): Promise<AuthResponse> {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: payload.email },
     });
@@ -55,7 +70,7 @@ export class AuthService {
         payload.provider,
         payload.providerAccountId,
       );
-      return existingUser;
+      return this.createAuthResponse(existingUser);
     }
 
     return this.createNewUserWithAccount(payload);
@@ -70,14 +85,16 @@ export class AuthService {
       await this.prisma.account.create({
         data: { userId, provider, providerAccountId },
       });
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException(
         'Error linking account to user. Please try again later.',
       );
     }
   }
 
-  private async createNewUserWithAccount(payload: OAuthUserPayload) {
+  private async createNewUserWithAccount(
+    payload: OAuthUserPayload,
+  ): Promise<AuthResponse> {
     const user = await this.prisma.user.create({
       data: {
         email: payload.email,
@@ -98,6 +115,24 @@ export class AuthService {
       name: user.name,
     });
 
-    return user;
+    return this.createAuthResponse(user);
+  }
+
+  private async createAuthResponse(user: {
+    id: string;
+    email: string;
+    name: string | null;
+    avatarUrl: string | null;
+  }): Promise<AuthResponse> {
+    const accessToken = await this.jwtService.signAsync({
+      sub: user.id,
+      email: user.email,
+    });
+
+    return {
+      user,
+      accessToken,
+      tokenType: 'Bearer',
+    };
   }
 }

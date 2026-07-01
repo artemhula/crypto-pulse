@@ -3,10 +3,8 @@ import type { Request } from 'express';
 export interface RequestWithGoogleUser extends Request {
   user: {
     email: string;
-    firstName: string;
-    lastName: string;
-    picture: string;
-    accessToken: string;
+    name: string;
+    avatarUrl: string;
     id: string;
   };
 }

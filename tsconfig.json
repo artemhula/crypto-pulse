@@ -26,6 +26,9 @@
     },
     {
       "path": "./libs/redis"
+    },
+    {
+      "path": "./apps/worker-telegram"
     }
   ]
 }

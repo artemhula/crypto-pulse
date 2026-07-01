@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { PrismaModule } from '@crypto-pulse/db';
 import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
@@ -12,6 +13,16 @@ import { GoogleStrategy } from './strategies';
     PrismaModule,
     ConfigModule.forRoot({
       envFilePath: '.env',
+    }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('JWT_ACCESS_SECRET') || 'dev-jwt-secret',
+        signOptions: {
+          expiresIn: configService.get('JWT_ACCESS_EXPIRES_IN') || '1h',
+        },
+      }),
     }),
     RabbitMQModule.forRootAsync({
       imports: [ConfigModule],
