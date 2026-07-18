@@ -7,7 +7,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { Request } from 'express';
-import { JwtAuthGuard, type AuthenticatedRequest } from './auth/jwt-auth.guard';
+import { JwtAuthGuard, type AuthenticatedRequest } from '../guards';
 
 @Controller('auth')
 @ApiTags('auth')

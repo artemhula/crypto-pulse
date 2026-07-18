@@ -5,9 +5,9 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { CoinsService } from './app.service';
-import { JwtAuthGuard } from './auth/jwt-auth.guard';
-import { GetCoinParamsDto } from './dtos/get-coin-params.dto';
+import { CoinsService } from '../services';
+import { JwtAuthGuard } from '../guards';
+import { GetCoinParamsDto } from '../dtos';
 
 @Controller('coins')
 @UseGuards(JwtAuthGuard)
