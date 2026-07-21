@@ -1,49 +1,40 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
-import { PrismaModule } from '@crypto-pulse/db';
+import { RedisModule } from '@crypto-pulse/redis';
 import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { GoogleStrategy } from './strategies';
+import { TelegrafModule } from 'nestjs-telegraf';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
-    PrismaModule,
     ConfigModule.forRoot({
+      isGlobal: true,
       envFilePath: '.env',
     }),
-    JwtModule.registerAsync({
+    TelegrafModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get('JWT_ACCESS_SECRET') || 'dev-jwt-secret',
-        signOptions: {
-          expiresIn: configService.get('JWT_ACCESS_EXPIRES_IN') || '1h',
-        },
+        token: configService.get<string>('TELEGRAM_BOT_TOKEN') || '',
       }),
     }),
+    RedisModule,
     RabbitMQModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         exchanges: [
           {
-            name: RabbitExchange.Auth,
-            type: 'topic',
-          },
-          {
             name: RabbitExchange.Telegram,
             type: 'topic',
           },
         ],
-        uri: configService.get('RABBITMQ_URI') || 'amqp://localhost:5672',
+        uri: configService.get('RABBITMQ_URI'),
         connectionInitOptions: { wait: false },
       }),
     }),
   ],
-  controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy],
+  providers: [AppService],
 })
-export class AuthModule {}
+export class AppModule {}

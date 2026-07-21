@@ -20,8 +20,8 @@ export class TelegramLinkService {
     const code = crypto.randomBytes(3).toString('hex').toUpperCase();
 
     const isSaved = await this.redis.set(
-      `telegram_code:${userId}`,
-      code,
+      `telegram_code:${code}`,
+      userId,
       'EX',
       300,
       'NX',
