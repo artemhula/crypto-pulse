@@ -29,6 +29,9 @@
     },
     {
       "path": "./apps/worker-telegram"
+    },
+    {
+      "path": "./apps/frontend"
     }
   ]
 }
