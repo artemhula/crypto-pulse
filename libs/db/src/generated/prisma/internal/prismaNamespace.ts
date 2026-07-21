@@ -920,6 +920,7 @@ export const UserScalarFieldEnum = {
   email: 'email',
   name: 'name',
   avatarUrl: 'avatarUrl',
+  telegramChatId: 'telegramChatId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
