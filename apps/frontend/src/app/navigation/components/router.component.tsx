@@ -1,14 +1,14 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { ROUTES } from '../constants';
+import { MainLayout } from '../layouts';
+
+const router = createBrowserRouter([
+  {
+    element: <MainLayout />,
+    children: ROUTES,
+  },
+]);
 
 export const Router = () => {
-  return (
-    <BrowserRouter>
-      <Routes>
-        {ROUTES.map((r) => (
-          <Route key={r.path} path={r.path} element={<r.Component />} />
-        ))}
-      </Routes>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 };

@@ -1,9 +1,6 @@
-import { Header } from '../../../shared/components/header/header.component';
+import { AuthenticationForm } from '../components/authentication-form.component';
+import styles from './login.module.scss';
 
 export const LoginPage = () => {
-  return (
-    <>
-      <Header />
-    </>
-  );
+  return <AuthenticationForm className={styles.form} />;
 };
