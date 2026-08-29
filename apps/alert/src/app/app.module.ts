@@ -7,7 +7,7 @@ import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: '../../.env',
     }),
     RabbitMQModule.forRootAsync({
       imports: [ConfigModule],

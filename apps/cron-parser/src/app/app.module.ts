@@ -10,7 +10,7 @@ import { CronParserService } from './app.service';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: '../../.env',
     }),
     ScheduleModule.forRoot(),
     CoinModule,

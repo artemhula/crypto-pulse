@@ -2,7 +2,7 @@ import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 import { GoogleOauthGuard } from './guards/google-oauth.guard';
-import { AuthService, type AuthResponse } from './auth.service';
+import { AuthService } from './auth.service';
 import type { RequestWithGoogleUser } from './interfaces';
 
 @Controller('auth')

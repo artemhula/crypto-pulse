@@ -1,0 +1,16 @@
+{
+  "name": "@crypto-pulse/coin",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@crypto-pulse/db": "*",
+    "@crypto-pulse/redis": "*",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "ioredis": "^5.11.1"
+  }
+}
