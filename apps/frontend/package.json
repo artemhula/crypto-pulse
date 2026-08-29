@@ -1,5 +1,37 @@
 {
   "name": "@crypto-pulse/frontend",
   "version": "0.0.1",
-  "private": true
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@mantine/core": "^9.4.2",
+    "@mantine/dates": "^9.4.2",
+    "@mantine/form": "^9.4.2",
+    "@mantine/hooks": "^9.4.2",
+    "@mantine/modals": "^9.4.2",
+    "@mantine/notifications": "^9.4.2",
+    "@tanstack/react-query": "^5.101.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "6.30.3",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.0.0",
+    "autoprefixer": "10.4.13",
+    "jsdom": "~22.1.0",
+    "postcss": "^8.4.38",
+    "postcss-preset-mantine": "^1.18.0",
+    "postcss-simple-vars": "^7.0.1",
+    "sass-embedded": "^1.103.1",
+    "tailwindcss": "3.4.3",
+    "vite": "^8.0.0",
+    "vitest": "~4.1.0"
+  }
 }

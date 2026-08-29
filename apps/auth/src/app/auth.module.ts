@@ -12,7 +12,7 @@ import { GoogleStrategy } from './strategies';
   imports: [
     PrismaModule,
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: '../../.env',
     }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

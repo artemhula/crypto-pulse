@@ -13,13 +13,15 @@ import { TOKENS_QUERY } from './constants/tokens.contstant';
 
 @Injectable()
 export class CronParserService {
+  private readonly coingeckoApiUrl;
   constructor(
     private configService: ConfigService,
     private coinRepository: CoinRepository,
     private readonly amqpConnection: AmqpConnection,
-  ) {}
-  private readonly coingeckoApiUrl =
-    this.configService.get('COINGECKO_API_URL') ?? '';
+  ) {
+    this.coingeckoApiUrl =
+      this.configService.get<string>('COINGECKO_API_URL') ?? '';
+  }
   private readonly logger = new Logger(CronParserService.name);
 
   @Cron(CronExpression.EVERY_MINUTE)

@@ -1,0 +1,13 @@
+{
+  "name": "@crypto-pulse/redis",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "ioredis": "^5.11.1"
+  }
+}

@@ -19,7 +19,7 @@ import { JwtAuthGuard } from './guards';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: '../../.env',
     }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
