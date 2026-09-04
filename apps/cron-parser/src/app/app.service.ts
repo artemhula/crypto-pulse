@@ -34,7 +34,7 @@ export class CronParserService {
       const priceUpdates = await this.updateCoins(response.data);
       this.logger.log('Crypto prices updated successfully.');
 
-      this.amqpConnection.publish(
+      await this.amqpConnection.publish(
         RabbitExchange.Crypto,
         RabbitRoutingKey.Crypto.Updated,
         { prices: priceUpdates },
