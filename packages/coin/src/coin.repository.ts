@@ -70,6 +70,15 @@ export class CoinRepository {
     return coins;
   }
 
+  async findAllByIds(
+    ids: string[],
+  ): Promise<Array<{ id: string; currentPrice: number }>> {
+    return this.prisma.coin.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, currentPrice: true },
+    });
+  }
+
   async create(dto: CreateCoinDto) {
     const coin = await this.prisma.coin.create({
       data: dto,

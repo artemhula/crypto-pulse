@@ -31,13 +31,13 @@ export class CronParserService {
       const response = await axios.get<ICoinGeckoCoin[]>(url);
       this.logger.log('Fetching crypto prices...');
 
-      await this.updateCoins(response.data);
+      const priceUpdates = await this.updateCoins(response.data);
       this.logger.log('Crypto prices updated successfully.');
 
       this.amqpConnection.publish(
         RabbitExchange.Crypto,
         RabbitRoutingKey.Crypto.Updated,
-        {},
+        { prices: priceUpdates },
       );
     } catch (e) {
       this.logger.error('Error fetching crypto prices:', e);
@@ -45,6 +45,12 @@ export class CronParserService {
   }
 
   private async updateCoins(coinData: ICoinGeckoCoin[]) {
+    const previousCoins = await this.coinRepository.findAllByIds(
+      coinData.map((coin) => coin.id),
+    );
+    const previousPrices = new Map(
+      previousCoins.map((coin) => [coin.id, coin.currentPrice]),
+    );
     const coins = coinData.map((coin) => ({
       id: coin.id,
       symbol: coin.symbol,
@@ -53,5 +59,11 @@ export class CronParserService {
       image: coin.image,
     }));
     await this.coinRepository.createOrUpdateMany(coins);
+
+    return coins.map((coin) => ({
+      ticker: coin.symbol.toLowerCase(),
+      previousPrice: previousPrices.get(coin.id) ?? null,
+      currentPrice: coin.currentPrice,
+    }));
   }
 }

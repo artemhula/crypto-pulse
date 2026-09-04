@@ -1,14 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
+import { PrismaModule } from '@crypto-pulse/db';
 import { AppService } from './app.service';
 import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       envFilePath: '../../.env',
     }),
+    PrismaModule,
     RabbitMQModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -16,6 +19,10 @@ import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
         exchanges: [
           {
             name: RabbitExchange.Crypto,
+            type: 'topic',
+          },
+          {
+            name: RabbitExchange.Telegram,
             type: 'topic',
           },
         ],
