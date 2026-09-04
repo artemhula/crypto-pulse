@@ -14,6 +14,7 @@ import {
 } from './controllers';
 import { CoinsService, TelegramLinkService, UserService } from './services';
 import { JwtAuthGuard } from './guards';
+import { AlertModule } from './alerts/alert.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { JwtAuthGuard } from './guards';
     CoinModule,
     RedisModule,
     PrismaModule,
+    AlertModule,
   ],
   controllers: [
     AuthController,
