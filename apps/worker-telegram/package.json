@@ -2,7 +2,7 @@
   "name": "@crypto-pulse/worker-telegram",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "nest start --watch --builder swc",
     "build": "nest build",
     "start": "node dist/main.js"
   },

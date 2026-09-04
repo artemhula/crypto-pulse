@@ -16,6 +16,9 @@
     "db:generate": "turbo db:generate"
   },
   "devDependencies": {
+    "@nestjs/cli": "^12.0.0",
+    "@swc/cli": "^0.8.1",
+    "@swc/core": "^1.16.1",
     "prettier": "~3.6.2",
     "tsx": "^4.23.12",
     "turbo": "^2.10.12",
