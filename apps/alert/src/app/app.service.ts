@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
-import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { AmqpConnection, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 import { PrismaService } from '@crypto-pulse/db';
 import {
   RabbitExchange,
@@ -30,7 +29,7 @@ export class AppService {
   @RabbitSubscribe({
     exchange: RabbitExchange.Crypto,
     routingKey: RabbitRoutingKey.Crypto.Updated,
-    queue: RabbitQueue.CryptoUpdates,
+    queue: RabbitQueue.AlertProcessing,
     queueOptions: {
       durable: true,
     },

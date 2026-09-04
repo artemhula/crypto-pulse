@@ -11,7 +11,7 @@ export const RabbitRoutingKey = {
   Telegram: {
     Link: 'telegram.link',
     Linked: 'telegram.linked',
-    SendAlert: 'telegram.send-alert',
+    SendAlert: 'send_telegram_alert',
   },
 } as const;
 
