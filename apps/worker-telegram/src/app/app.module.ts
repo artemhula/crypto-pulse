@@ -30,7 +30,7 @@ import { AppService } from './app.service';
             type: 'topic',
           },
         ],
-        uri: configService.get('RABBITMQ_URI'),
+        uri: configService.get('RABBITMQ_URI') || 'amqp://localhost:5672',
         connectionInitOptions: { wait: false },
       }),
     }),
