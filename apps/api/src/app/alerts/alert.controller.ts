@@ -36,20 +36,14 @@ export class AlertController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get an alert by id' })
-  findOne(
-    @Param('id') id: string,
-    @Req() request: AuthenticatedRequest,
-  ) {
+  findOne(@Param('id') id: string, @Req() request: AuthenticatedRequest) {
     return this.alertService.findOne(id, request.user!.sub);
   }
 
   @Post()
   @ApiOperation({ summary: 'Create an alert' })
   @ApiCreatedResponse({ description: 'Created alert' })
-  create(
-    @Body() dto: CreateAlertDto,
-    @Req() request: AuthenticatedRequest,
-  ) {
+  create(@Body() dto: CreateAlertDto, @Req() request: AuthenticatedRequest) {
     return this.alertService.create(request.user!.sub, dto);
   }
 
@@ -65,10 +59,7 @@ export class AlertController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an alert' })
-  remove(
-    @Param('id') id: string,
-    @Req() request: AuthenticatedRequest,
-  ) {
+  remove(@Param('id') id: string, @Req() request: AuthenticatedRequest) {
     return this.alertService.remove(id, request.user!.sub);
   }
 }

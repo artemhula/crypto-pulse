@@ -11,11 +11,14 @@ export const RabbitRoutingKey = {
   Telegram: {
     Link: 'telegram.link',
     Linked: 'telegram.linked',
+    SendAlert: 'telegram.send-alert',
   },
 } as const;
 
 export enum RabbitQueue {
   CryptoUpdates = 'crypto-updates-queue',
+  AlertProcessing = 'alert-processing-queue',
   TelegramLinks = 'telegram-links-queue',
   TelegramLinked = 'telegram-linked-queue',
+  TelegramAlerts = 'telegram-alerts-queue',
 }

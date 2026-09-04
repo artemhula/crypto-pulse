@@ -1,13 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { PrismaService } from '@crypto-pulse/db';
 import {
   RabbitExchange,
   RabbitQueue,
   RabbitRoutingKey,
 } from '@crypto-pulse/rabbitmq-common';
 
+interface PriceUpdate {
+  ticker: string;
+  previousPrice: number | null;
+  currentPrice: number;
+}
+
+interface CryptoUpdatedEvent {
+  prices: PriceUpdate[];
+}
+
 @Injectable()
 export class AppService {
+  private readonly logger = new Logger(AppService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly amqpConnection: AmqpConnection,
+  ) {}
+
   @RabbitSubscribe({
     exchange: RabbitExchange.Crypto,
     routingKey: RabbitRoutingKey.Crypto.Updated,
@@ -16,7 +35,74 @@ export class AppService {
       durable: true,
     },
   })
-  public async handleCryptoUpdate() {
-    console.log('Crypto updated');
+  public async handleCryptoUpdate(event: CryptoUpdatedEvent) {
+    for (const price of event.prices) {
+      if (price.previousPrice === null) {
+        continue;
+      }
+
+      const alerts = await this.prisma.alert.findMany({
+        where: {
+          ticker: price.ticker,
+          isTriggered: false,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+        },
+        include: {
+          user: {
+            select: { telegramChatId: true },
+          },
+        },
+      });
+
+      for (const alert of alerts) {
+        if (
+          !this.hasCrossedLevel(price.previousPrice, price.currentPrice, alert)
+        ) {
+          continue;
+        }
+
+        if (!alert.user.telegramChatId) {
+          continue;
+        }
+
+        const claimed = await this.prisma.alert.updateMany({
+          where: { id: alert.id, isTriggered: false },
+          data: { isTriggered: true },
+        });
+
+        if (claimed.count !== 1) {
+          continue;
+        }
+
+        await this.amqpConnection.publish(
+          RabbitExchange.Telegram,
+          RabbitRoutingKey.Telegram.SendAlert,
+          {
+            alertId: alert.id,
+            telegramChatId: alert.user.telegramChatId,
+            ticker: alert.ticker,
+            targetPrice: Number(alert.targetPrice),
+            currentPrice: price.currentPrice,
+            condition: alert.condition,
+          },
+        );
+      }
+    }
+
+    this.logger.log('Alert processing completed');
+  }
+
+  private hasCrossedLevel(
+    previousPrice: number,
+    currentPrice: number,
+    alert: { targetPrice: unknown; condition: string },
+  ) {
+    const targetPrice = Number(alert.targetPrice);
+
+    if (alert.condition === 'ABOVE') {
+      return previousPrice < targetPrice && currentPrice >= targetPrice;
+    }
+
+    return previousPrice > targetPrice && currentPrice <= targetPrice;
   }
 }

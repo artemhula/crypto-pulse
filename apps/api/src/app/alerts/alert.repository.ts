@@ -35,8 +35,12 @@ export class AlertRepository {
     return this.prisma.alert.updateMany({
       where: { id, userId },
       data: {
-        ...(dto.ticker === undefined ? {} : { ticker: dto.ticker.toLowerCase() }),
-        ...(dto.targetPrice === undefined ? {} : { targetPrice: dto.targetPrice }),
+        ...(dto.ticker === undefined
+          ? {}
+          : { ticker: dto.ticker.toLowerCase() }),
+        ...(dto.targetPrice === undefined
+          ? {}
+          : { targetPrice: dto.targetPrice }),
         ...(dto.condition === undefined ? {} : { condition: dto.condition }),
         ...(dto.expiresAt === undefined
           ? {}
