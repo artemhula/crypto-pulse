@@ -12,7 +12,7 @@ import {
 import { AlertCondition } from '@crypto-pulse/db';
 
 export class CreateAlertDto {
-  @ApiProperty({ example: 'bitcoin' })
+  @ApiProperty({ example: 'btc', description: 'Coin symbol (ticker)' })
   @IsString()
   @MaxLength(50)
   ticker!: string;

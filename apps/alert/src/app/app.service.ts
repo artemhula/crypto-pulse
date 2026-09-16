@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AmqpConnection, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 import { PrismaService } from '@crypto-pulse/db';
 import {
@@ -22,8 +22,8 @@ export class AppService {
   private readonly logger = new Logger(AppService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly amqpConnection: AmqpConnection,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(AmqpConnection) private readonly amqpConnection: AmqpConnection,
   ) {}
 
   @RabbitSubscribe({
