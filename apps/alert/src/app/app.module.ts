@@ -9,7 +9,6 @@ import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '../../.env',
     }),
     PrismaModule,
     RabbitMQModule.forRootAsync({
