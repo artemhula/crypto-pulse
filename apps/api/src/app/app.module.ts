@@ -20,7 +20,6 @@ import { AlertModule } from './alerts/alert.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '../../.env',
     }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
