@@ -8,13 +8,13 @@ export function middleware(request: NextRequest) {
 
   const isLoginRoute = loginRoute === pathname;
 
-  if (isLoginRoute && !token) {
-    const loginUrl = new URL(loginRoute, request.url);
-    return NextResponse.redirect(loginUrl);
-  }
-
   if (isLoginRoute && token) {
     return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  if (!isLoginRoute && !token) {
+    const loginUrl = new URL(loginRoute, request.url);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
