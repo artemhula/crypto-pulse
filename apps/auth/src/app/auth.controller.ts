@@ -45,4 +45,18 @@ export class AuthController {
 
     res.redirect(frontendUrl);
   }
+
+  @Get('logout')
+  logout(@Res() res: Response): void {
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: this.configService.get('NODE_ENV') === 'production',
+      path: '/',
+    });
+
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL') || 'http://localhost:4200';
+    res.redirect(frontendUrl);
+  }
 }
