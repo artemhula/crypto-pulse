@@ -67,7 +67,7 @@ export class AuthController {
 
   @Get('logout')
   @ApiOperation({
-    summary: 'Log out: clear access token and redirect to auth service',
+    summary: 'Log out: clear access token cookie',
   })
   logout(@Res() res: Response) {
     res.clearCookie('access_token', {
@@ -77,7 +77,7 @@ export class AuthController {
       path: '/',
     });
 
-    res.redirect(302, `${this.getAuthServiceUrl()}/api/auth/logout`);
+    res.status(204).send();
   }
 
   private getAuthServiceUrl() {
