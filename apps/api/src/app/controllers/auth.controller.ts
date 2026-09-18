@@ -1,4 +1,12 @@
-import { Controller, Get, Req, UseGuards, Redirect } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Req,
+  Res,
+  UseGuards,
+  Redirect,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   ApiBearerAuth,
@@ -6,13 +14,17 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { JwtAuthGuard, type AuthenticatedRequest } from '../guards';
+import { UserService } from '../services';
 
 @Controller('auth')
 @ApiTags('auth')
 export class AuthController {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly userService: UserService,
+  ) {}
 
   @Get('google')
   @Redirect()
@@ -41,11 +53,31 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
-  @ApiOkResponse({ description: 'Current authenticated user' })
-  getMe(@Req() request: AuthenticatedRequest) {
-    return {
-      user: request.user,
-    };
+  @ApiOperation({ summary: 'Get the current authenticated user' })
+  @ApiOkResponse({ description: 'Full user record from the database' })
+  async getMe(@Req() request: AuthenticatedRequest) {
+    const user = await this.userService.findUserById(request.user!.sub);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return { user };
+  }
+
+  @Get('logout')
+  @ApiOperation({
+    summary: 'Log out: clear access token and redirect to auth service',
+  })
+  logout(@Res() res: Response) {
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: this.configService.get('NODE_ENV') === 'production',
+      path: '/',
+    });
+
+    res.redirect(302, `${this.getAuthServiceUrl()}/api/auth/logout`);
   }
 
   private getAuthServiceUrl() {
