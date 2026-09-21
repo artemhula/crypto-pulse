@@ -56,6 +56,9 @@ export class CronParserService {
       symbol: coin.symbol,
       name: coin.name,
       currentPrice: coin.current_price,
+      marketCap: coin.market_cap,
+      priceChangePercentage1h: coin.price_change_percentage_1h_in_currency,
+      priceChangePercentage24h: coin.price_change_percentage_24h_in_currency,
       image: coin.image,
     }));
     await this.coinRepository.createOrUpdateMany(coins);

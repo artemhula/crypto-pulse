@@ -9,6 +9,18 @@ export class UpdateCoinDto {
   @IsOptional()
   currentPrice?: number;
 
+  @IsNumber()
+  @IsOptional()
+  marketCap?: number;
+
+  @IsNumber()
+  @IsOptional()
+  priceChangePercentage1h?: number;
+
+  @IsNumber()
+  @IsOptional()
+  priceChangePercentage24h?: number;
+
   @IsUrl()
   @IsOptional()
   image?: string;

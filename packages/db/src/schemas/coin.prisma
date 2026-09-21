@@ -3,6 +3,9 @@ model Coin {
   symbol       String   @unique
   name         String
   currentPrice Float
+  marketCap    Float        @default(0)
+  priceChangePercentage1h   Float @default(0)
+  priceChangePercentage24h  Float @default(0)
   image        String?
   updatedAt    DateTime @updatedAt
 }
