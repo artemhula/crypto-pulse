@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/user.context';
 import { logout } from '@/lib/auth/logout';
@@ -30,7 +31,10 @@ export const Header = () => {
 
   return (
     <header className="flex items-center justify-between p-5 bg-background border-b">
-      <h1 className="text-xl md:text-2xl font-bold">pulsee.</h1>
+      <div className="flex items-center gap-2">
+        <Image src="/logo.png" alt="Logo" width={32} height={32} />
+        <h1 className="text-xl md:text-2xl font-bold">pulsee.</h1>
+      </div>
       {user && (
         <DropdownMenu>
           <DropdownMenuTrigger
