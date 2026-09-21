@@ -1,6 +1,6 @@
 import { UserProvider } from '@/context';
 import { getCurrentUser } from '@/lib/auth/get-current-user';
-import { Header } from './components';
+import { Header, Navbar } from './components';
 
 export default async function RootLayout({
   children,
@@ -14,7 +14,12 @@ export default async function RootLayout({
       <body>
         <UserProvider initialUser={user}>
           <Header />
-          <main>{children}</main>
+          <div className="flex flex-1 overflow-hidden">
+            <Navbar />
+            <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-20 lg:pb-6">
+              {children}
+            </main>
+          </div>
         </UserProvider>
       </body>
     </html>

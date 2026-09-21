@@ -29,11 +29,8 @@ export const Header = () => {
   };
 
   return (
-    <header
-      className="flex items-center justify-between p-5 bg-gray-50
-"
-    >
-      <h1 className="text-xl font-bold">pulsee.</h1>
+    <header className="flex items-center justify-between p-5 bg-background border-b">
+      <h1 className="text-xl md:text-2xl font-bold">pulsee.</h1>
       {user && (
         <DropdownMenu>
           <DropdownMenuTrigger
