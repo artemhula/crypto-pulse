@@ -4,9 +4,8 @@ model Alert {
   ticker       String        
   targetPrice  Decimal       @map("target_price") @db.Decimal(18, 8)
   condition    AlertCondition 
-  isTriggered  Boolean       @default(false) @map("is_triggered")
+  status       AlertStatus   @default(ACTIVE)
   createdAt    DateTime      @default(now()) @map("created_at")
-  
   expiresAt    DateTime?     @map("expires_at") 
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -28,6 +27,13 @@ model NotificationChannel {
 enum AlertCondition {
   ABOVE
   BELOW
+}
+
+enum AlertStatus {
+  ACTIVE
+  CANCELLED
+  TRIGGERED
+  EXPIRED
 }
 
 enum ChannelType {
