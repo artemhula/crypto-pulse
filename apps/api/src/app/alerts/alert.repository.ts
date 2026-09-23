@@ -5,7 +5,7 @@ import { CreateAlertDto, UpdateAlertDto } from './dtos';
 export interface AlertsQuery {
   page: number;
   limit: number;
-  order?: 'asc' | 'desc';
+  status?: AlertStatus;
 }
 
 const EMPTY_COUNTS: Record<AlertStatus, number> = {
@@ -20,7 +20,7 @@ export class AlertRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAllByUserId(userId: string, query: AlertsQuery) {
-    const { page, limit, order } = query;
+    const { page, limit, status } = query;
 
     await this.prisma.alert.updateMany({
       where: {
@@ -31,14 +31,12 @@ export class AlertRepository {
       data: { status: AlertStatus.EXPIRED },
     });
 
-    const where = { userId };
+    const where = { userId, ...(status ? { status } : {}) };
 
     const [items, total, countsArr] = await Promise.all([
       this.prisma.alert.findMany({
         where,
-        orderBy: order
-          ? [{ status: order }, { createdAt: 'desc' }]
-          : { createdAt: 'desc' },
+        orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
       }),

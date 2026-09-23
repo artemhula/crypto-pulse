@@ -38,7 +38,7 @@ export class AlertController {
     return this.alertService.findAll(request.user!.sub, {
       page: query.page ?? 1,
       limit: query.limit ?? 10,
-      order: query.order,
+      status: query.status,
     });
   }
 

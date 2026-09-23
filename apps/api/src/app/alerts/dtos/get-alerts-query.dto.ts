@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { AlertStatus } from '@crypto-pulse/db';
 
 export class GetAlertsQueryDto {
   @ApiPropertyOptional({ default: 1, example: 1 })
@@ -18,8 +19,11 @@ export class GetAlertsQueryDto {
   @Max(100)
   limit?: number = 10;
 
-  @ApiPropertyOptional({ enum: ['asc', 'desc'], description: 'Sort by status' })
+  @ApiPropertyOptional({
+    enum: AlertStatus,
+    description: 'Filter alerts by status',
+  })
   @IsOptional()
-  @IsIn(['asc', 'desc'])
-  order?: 'asc' | 'desc';
+  @IsEnum(AlertStatus)
+  status?: AlertStatus;
 }
