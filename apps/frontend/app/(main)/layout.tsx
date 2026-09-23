@@ -11,12 +11,14 @@ export default async function RootLayout({
 
   return (
     <UserProvider initialUser={user}>
-      <Header />
-      <div className="flex flex-1 overflow-hidden">
-        <Navbar />
-        <main className="flex-1 overflow-y-auto p-4 pb-20 lg:pb-6">
-          {children}
-        </main>
+      <div className="flex h-screen flex-col overflow-hidden">
+        <Header />
+        <div className="flex flex-1 overflow-hidden">
+          <Navbar />
+          <main className="flex-1 overflow-y-auto p-4 pb-20 lg:pb-6">
+            {children}
+          </main>
+        </div>
       </div>
     </UserProvider>
   );

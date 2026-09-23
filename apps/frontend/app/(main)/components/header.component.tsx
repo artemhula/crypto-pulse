@@ -30,7 +30,7 @@ export const Header = () => {
   };
 
   return (
-    <header className="flex items-center justify-between p-5 bg-background border-b">
+    <header className="flex shrink-0 items-center justify-between p-5 bg-background border-b">
       <div className="flex items-center gap-2">
         <Image src="/logo.png" alt="Logo" width={32} height={32} />
         <h1 className="text-xl md:text-2xl font-bold">pulsee.</h1>
