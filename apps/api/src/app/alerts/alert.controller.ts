@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -17,7 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard, type AuthenticatedRequest } from '../guards';
-import { CreateAlertDto, UpdateAlertDto } from './dtos';
+import { CreateAlertDto, GetAlertsQueryDto, UpdateAlertDto } from './dtos';
 import { AlertService } from './alert.service';
 
 @Controller('alerts')
@@ -30,8 +31,15 @@ export class AlertController {
   @Get()
   @ApiOperation({ summary: 'Get current user alerts' })
   @ApiOkResponse({ description: 'List of alerts' })
-  findAll(@Req() request: AuthenticatedRequest) {
-    return this.alertService.findAll(request.user!.sub);
+  findAll(
+    @Query() query: GetAlertsQueryDto,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    return this.alertService.findAll(request.user!.sub, {
+      page: query.page ?? 1,
+      limit: query.limit ?? 10,
+      order: query.order,
+    });
   }
 
   @Get(':id')

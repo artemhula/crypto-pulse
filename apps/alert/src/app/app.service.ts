@@ -1,11 +1,12 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AmqpConnection, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
-import { AlertStatus, PrismaService } from '@crypto-pulse/db';
+import { AlertCondition, AlertStatus, PrismaService } from '@crypto-pulse/db';
 import {
   RabbitExchange,
   RabbitQueue,
   RabbitRoutingKey,
 } from '@crypto-pulse/rabbitmq-common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 interface PriceUpdate {
   ticker: string;
@@ -98,10 +99,25 @@ export class AppService {
   ) {
     const targetPrice = Number(alert.targetPrice);
 
-    if (alert.condition === 'ABOVE') {
+    if (alert.condition === AlertCondition.ABOVE) {
       return previousPrice < targetPrice && currentPrice >= targetPrice;
     }
 
     return previousPrice > targetPrice && currentPrice <= targetPrice;
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async expireAlerts() {
+    const result = await this.prisma.alert.updateMany({
+      where: {
+        status: AlertStatus.ACTIVE,
+        expiresAt: { lt: new Date() },
+      },
+      data: { status: AlertStatus.EXPIRED },
+    });
+
+    if (result.count > 0) {
+      this.logger.log(`Marked ${result.count} alerts as EXPIRED`);
+    }
   }
 }
