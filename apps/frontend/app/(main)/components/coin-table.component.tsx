@@ -1,6 +1,8 @@
 'use client';
 
 import Image from 'next/image';
+import { cn } from 'cn';
+import { Triangle } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -14,8 +16,6 @@ import { useQuery } from '@tanstack/react-query';
 import { getCoins } from '@/lib/coins/get-coins';
 import type { Coin } from '@/types/coin.type';
 import { SearchSortBar, useSearchSort } from './search-sort-bar';
-import { cn } from 'cn';
-import { Triangle } from 'lucide-react';
 
 interface CoinTableProps {
   initialCoins: Coin[];
