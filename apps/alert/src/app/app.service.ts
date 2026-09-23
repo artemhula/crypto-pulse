@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AmqpConnection, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
-import { PrismaService } from '@crypto-pulse/db';
+import { AlertStatus, PrismaService } from '@crypto-pulse/db';
 import {
   RabbitExchange,
   RabbitQueue,
@@ -43,7 +43,7 @@ export class AppService {
       const alerts = await this.prisma.alert.findMany({
         where: {
           ticker: price.ticker,
-          isTriggered: false,
+          status: AlertStatus.ACTIVE,
           OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
         },
         include: {
@@ -65,8 +65,8 @@ export class AppService {
         }
 
         const claimed = await this.prisma.alert.updateMany({
-          where: { id: alert.id, isTriggered: false },
-          data: { isTriggered: true },
+          where: { id: alert.id, status: AlertStatus.ACTIVE },
+          data: { status: AlertStatus.TRIGGERED },
         });
 
         if (claimed.count !== 1) {

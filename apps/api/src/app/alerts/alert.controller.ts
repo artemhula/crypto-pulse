@@ -57,6 +57,12 @@ export class AlertController {
     return this.alertService.update(id, request.user!.sub, dto);
   }
 
+  @Patch(':id/cancel')
+  @ApiOperation({ summary: 'Cancel an alert' })
+  cancel(@Param('id') id: string, @Req() request: AuthenticatedRequest) {
+    return this.alertService.cancel(id, request.user!.sub);
+  }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an alert' })
   remove(@Param('id') id: string, @Req() request: AuthenticatedRequest) {

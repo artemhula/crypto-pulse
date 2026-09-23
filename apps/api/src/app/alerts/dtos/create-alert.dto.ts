@@ -9,7 +9,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { AlertCondition } from '@crypto-pulse/db';
+import { AlertCondition, AlertStatus } from '@crypto-pulse/db';
 
 export class CreateAlertDto {
   @ApiProperty({ example: 'btc', description: 'Coin symbol (ticker)' })
@@ -26,6 +26,14 @@ export class CreateAlertDto {
   @ApiProperty({ enum: AlertCondition, example: AlertCondition.ABOVE })
   @IsEnum(AlertCondition)
   condition!: AlertCondition;
+
+  @ApiPropertyOptional({
+    enum: ['ACTIVE', 'CANCELLED', 'TRIGGERED', 'EXPIRED'],
+    example: 'ACTIVE',
+  })
+  @IsOptional()
+  @IsEnum(AlertStatus)
+  status?: AlertStatus;
 
   @ApiPropertyOptional({ example: '2026-12-31T23:59:59.000Z' })
   @IsOptional()

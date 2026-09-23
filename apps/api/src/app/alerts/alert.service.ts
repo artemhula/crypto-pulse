@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { AlertStatus } from '@crypto-pulse/db';
 import { AlertRepository } from './alert.repository';
 import { CreateAlertDto, UpdateAlertDto } from './dtos';
 
@@ -23,8 +24,22 @@ export class AlertService {
   }
 
   async update(id: string, userId: string, dto: UpdateAlertDto) {
-    await this.findOne(id, userId);
+    const alert = await this.findOne(id, userId);
+    if (
+      (alert.expiresAt && new Date(alert.expiresAt) < new Date()) ||
+      alert.status !== AlertStatus.ACTIVE
+    ) {
+      throw new NotFoundException('Alert can not be updated');
+    }
     await this.alertRepository.update(id, userId, dto);
+    return this.findOne(id, userId);
+  }
+
+  async cancel(id: string, userId: string) {
+    await this.findOne(id, userId);
+    await this.alertRepository.update(id, userId, {
+      status: AlertStatus.CANCELLED,
+    });
     return this.findOne(id, userId);
   }
 

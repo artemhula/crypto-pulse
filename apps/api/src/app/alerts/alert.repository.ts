@@ -35,17 +35,11 @@ export class AlertRepository {
     return this.prisma.alert.updateMany({
       where: { id, userId },
       data: {
-        ...(dto.ticker === undefined
-          ? {}
-          : { ticker: dto.ticker.toLowerCase() }),
-        ...(dto.targetPrice === undefined
-          ? {}
-          : { targetPrice: dto.targetPrice }),
-        ...(dto.condition === undefined ? {} : { condition: dto.condition }),
-        ...(dto.expiresAt === undefined
-          ? {}
-          : { expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null }),
-        isTriggered: false,
+        ticker: dto.ticker?.toLowerCase(),
+        targetPrice: dto.targetPrice,
+        condition: dto.condition,
+        expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
+        status: dto.status,
       },
     });
   }
