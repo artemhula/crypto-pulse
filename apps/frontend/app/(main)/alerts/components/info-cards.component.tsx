@@ -13,7 +13,7 @@ interface InfoCardsProps {
 
 export const InfoCards = ({ counts }: InfoCardsProps) => {
   return (
-    <div className="flex h-full flex-row gap-4 overflow-x-auto scrollbar-none pb-20 snap-y snap-mandatory md:grid md:h-auto md:grid-cols-4 md:gap-6 md:snap-none md:overflow-hidden md:p-0 md:pb-0">
+    <div className="flex flex-row gap-4 overflow-x-auto scrollbar-none pb-6 snap-y snap-mandatory md:grid md:h-auto md:grid-cols-4 md:gap-6 md:snap-none md:overflow-hidden md:p-0">
       <Card className="h-40 w-full shrink-0 snap-start ring-1 ring-inset ring-foreground/10 md:h-auto md:w-auto md:snap-none md:shrink">
         <CardHeader>
           <CardDescription className="text-yellow-600">Active</CardDescription>
@@ -21,7 +21,7 @@ export const InfoCards = ({ counts }: InfoCardsProps) => {
             {counts.ACTIVE}
           </CardTitle>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+        <CardFooter className="flex-col items-start gap-1.5 text-sm h-30">
           <div className="text-muted-foreground">
             This alerts will trigger notifications when the conditions are met.
           </div>
@@ -36,7 +36,7 @@ export const InfoCards = ({ counts }: InfoCardsProps) => {
             {counts.TRIGGERED}
           </CardTitle>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+        <CardFooter className="flex-col items-start gap-1.5 text-sm h-30">
           <div className="text-muted-foreground">
             This alerts have been triggered and notifications have been sent to
             the user.
@@ -50,7 +50,7 @@ export const InfoCards = ({ counts }: InfoCardsProps) => {
             {counts.EXPIRED}
           </CardTitle>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+        <CardFooter className="flex-col items-start gap-1.5 text-sm h-30">
           <div className="text-muted-foreground">
             This alerts have expired and will not trigger any notifications.
           </div>
@@ -63,7 +63,7 @@ export const InfoCards = ({ counts }: InfoCardsProps) => {
             {counts.CANCELLED}
           </CardTitle>
         </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+        <CardFooter className="flex-col items-start gap-1.5 text-sm h-30">
           <div className="text-muted-foreground">
             This alerts have been cancelled and will not trigger any
             notifications.
