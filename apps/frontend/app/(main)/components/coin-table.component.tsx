@@ -133,7 +133,7 @@ export const CoinTable = ({ initialCoins }: CoinTableProps) => {
                 {coin.marketCap.toString().replace(/(.)(?=(\d{3})+$)/g, '$1 ')}
               </TableCell>
               <TableCell className="flex justify-end">
-                <ActionButtons />
+                <ActionButtons coin={coin} />
               </TableCell>
             </TableRow>
           ))}

@@ -11,20 +11,37 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useCreateAlertModal } from '@/components/alerts/';
+import { typenCoin } from '@/types/coin.type';
 
-const actions = [
-  {
-    label: 'Create new alert',
-    icon: <BellPlus />,
-  },
-  {
-    label: 'Show alert history',
-    icon: <ListClock />,
-  },
-];
+interface ActionButtonsProps {
+  coin: Coin;
+}
 
-export const ActionButtons = () => {
+export const ActionButtons = ({ coin }: ActionButtonsProps) => {
   const isSmallDevice = useMediaQuery('only screen and (max-width : 768px)');
+  const { openModal } = useCreateAlertModal();
+
+  const handleCreateAlert = () => {
+    openModal(coin);
+  };
+
+  const handleShowAlertHistory = () => {
+    // TODO: Implement show alert history functionality
+  };
+
+  const actions = [
+    {
+      label: 'Create new alert',
+      icon: <BellPlus />,
+      onClick: handleCreateAlert,
+    },
+    {
+      label: 'Show alert history',
+      icon: <ListClock />,
+      onClick: handleShowAlertHistory,
+    },
+  ];
 
   return (
     <div className="flex gap-2 pt-1">
@@ -40,7 +57,7 @@ export const ActionButtons = () => {
           <DropdownMenuContent align="end" className="w-40">
             {actions.map((action, index) => (
               <React.Fragment key={index}>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={action.onClick}>
                   {action.icon}
                   {action.label}
                 </DropdownMenuItem>
@@ -59,6 +76,7 @@ export const ActionButtons = () => {
               size="icon"
               className="gap-1.5"
               aria-label={action.label}
+              onClick={action.onClick}
             >
               {action.icon}
             </Button>

@@ -13,22 +13,23 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Field, FieldLabel } from '@/components/ui/field';
-import type { Order } from './use-search-sort.hook';
+import { OrderOption } from './use-search-sort.hook';
 
-const orderOptions: { label: string; field: string; order: Order }[] = [
+const orderOptions: OrderOption<Record<string, unknown>>[] &
+  { label: string }[] = [
   { label: 'Market Cap', field: 'marketCap', order: 'desc' },
   { label: 'Market Cap', field: 'marketCap', order: 'asc' },
   { label: 'Price', field: 'currentPrice', order: 'desc' },
   { label: 'Price', field: 'currentPrice', order: 'asc' },
-  { label: 'Price change (1h)', field: 'priceChangePercentage1h', order: 'desc' },
-  { label: 'Price change (1h)', field: 'priceChangePercentage1h', order: 'asc' },
-  { label: 'Price change (24h)', field: 'priceChangePercentage24h', order: 'desc' },
-  { label: 'Price change (24h)', field: 'priceChangePercentage24h', order: 'asc' },
+  { label: 'Price change (1h)', field: 'priceChange1h', order: 'desc' },
+  { label: 'Price change (1h)', field: 'priceChange1h', order: 'asc' },
+  { label: 'Price change (24h)', field: 'priceChange24h', order: 'desc' },
+  { label: 'Price change (24h)', field: 'priceChange24h', order: 'asc' },
 ];
 
 interface SearchSortBarProps<T extends Record<string, unknown>> {
   onSearch: (term?: string) => void;
-  onSort: (field: keyof T, order: Order) => void;
+  onSort: (option: OrderOption<T>) => void;
 }
 
 export const SearchSortBar = <T extends Record<string, unknown>>({
@@ -62,7 +63,10 @@ export const SearchSortBar = <T extends Record<string, unknown>>({
               (o) => o.field + o.order === value,
             );
             if (selectedOption) {
-              onSort(selectedOption.field as keyof T, selectedOption.order);
+              onSort({
+                field: selectedOption.field,
+                order: selectedOption.order,
+              });
             }
           }}
         >
