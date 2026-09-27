@@ -1,11 +1,12 @@
 import {
   Controller,
   Get,
+  Post,
   Req,
-  Res,
-  UseGuards,
   Redirect,
+  Res,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -54,7 +55,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get the current authenticated user' })
-  @ApiOkResponse({ description: 'Full user record from the database' })
+  @ApiOkResponse({ description: 'Current user profile' })
   async getMe(@Req() request: AuthenticatedRequest) {
     const user = await this.userService.findUserById(request.user!.sub);
 
@@ -62,22 +63,46 @@ export class AuthController {
       throw new NotFoundException('User not found');
     }
 
-    return { user };
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+      },
+    };
   }
 
-  @Get('logout')
+  @Post('logout')
   @ApiOperation({
-    summary: 'Log out: clear access token cookie',
+    summary: 'Log out: revoke the session and clear auth cookies',
   })
-  logout(@Res() res: Response) {
-    res.clearCookie('access_token', {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: this.configService.get('NODE_ENV') === 'production',
-      path: '/',
-    });
+  async logout(@Req() request: Request, @Res() res: Response) {
+    // Sessions belong to the auth service, so this only forwards — the same
+    // pass-through role the Google OAuth routes already play. Cookies travel
+    // both ways: the refresh token has to reach the service to be revoked, and
+    // the clearing `Set-Cookie` has to reach the browser to take effect.
+    const upstream = await fetch(
+      `${this.getAuthServiceUrl()}/api/auth/logout`,
+      {
+        method: 'POST',
+        headers: { Cookie: request.headers.cookie ?? '' },
+      },
+    ).catch(() => null);
 
-    res.status(204).send();
+    if (upstream?.ok) {
+      for (const cookie of upstream.headers.getSetCookie()) {
+        res.append('Set-Cookie', cookie);
+      }
+    } else {
+      // Unreachable auth service: clear locally anyway so the user still gets
+      // out. The stored session then lingers until it expires on its own.
+      for (const name of ['access_token', 'refresh_token']) {
+        res.clearCookie(name, { httpOnly: true, sameSite: 'lax', path: '/' });
+      }
+    }
+
+    res.status(204).end();
   }
 
   private getAuthServiceUrl() {
