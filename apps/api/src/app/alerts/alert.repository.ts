@@ -8,6 +8,11 @@ export interface AlertsQuery {
   status?: AlertStatus;
 }
 
+export interface AlertsByTickerQuery {
+  page: number;
+  limit: number;
+}
+
 const EMPTY_COUNTS: Record<AlertStatus, number> = {
   [AlertStatus.ACTIVE]: 0,
   [AlertStatus.CANCELLED]: 0,
@@ -19,9 +24,7 @@ const EMPTY_COUNTS: Record<AlertStatus, number> = {
 export class AlertRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAllByUserId(userId: string, query: AlertsQuery) {
-    const { page, limit, status } = query;
-
+  private async expireOutdatedAlerts(userId: string) {
     await this.prisma.alert.updateMany({
       where: {
         userId,
@@ -30,6 +33,12 @@ export class AlertRepository {
       },
       data: { status: AlertStatus.EXPIRED },
     });
+  }
+
+  async findAllByUserId(userId: string, query: AlertsQuery) {
+    const { page, limit, status } = query;
+
+    await this.expireOutdatedAlerts(userId);
 
     const where = { userId, ...(status ? { status } : {}) };
 
@@ -60,6 +69,36 @@ export class AlertRepository {
       total,
       totalPages: Math.ceil(total / limit),
       counts,
+    };
+  }
+
+  async findAllByUserIdAndTicker(
+    userId: string,
+    ticker: string,
+    query: AlertsByTickerQuery,
+  ) {
+    const { page, limit } = query;
+
+    await this.expireOutdatedAlerts(userId);
+
+    const where = { userId, ticker: ticker.toLowerCase() };
+
+    const [items, total] = await Promise.all([
+      this.prisma.alert.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.alert.count({ where }),
+    ]);
+
+    return {
+      items,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
     };
   }
 

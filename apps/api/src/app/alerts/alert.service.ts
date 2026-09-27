@@ -1,6 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { AlertStatus } from '@crypto-pulse/db';
-import { AlertRepository, AlertsQuery } from './alert.repository';
+import {
+  AlertRepository,
+  AlertsByTickerQuery,
+  AlertsQuery,
+} from './alert.repository';
 import { CreateAlertDto, UpdateAlertDto } from './dtos';
 
 @Injectable()
@@ -9,6 +13,10 @@ export class AlertService {
 
   findAll(userId: string, query: AlertsQuery) {
     return this.alertRepository.findAllByUserId(userId, query);
+  }
+
+  findAllByTicker(userId: string, ticker: string, query: AlertsByTickerQuery) {
+    return this.alertRepository.findAllByUserIdAndTicker(userId, ticker, query);
   }
 
   async findOne(id: string, userId: string) {

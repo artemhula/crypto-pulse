@@ -18,7 +18,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { JwtAuthGuard, type AuthenticatedRequest } from '../guards';
-import { CreateAlertDto, GetAlertsQueryDto, UpdateAlertDto } from './dtos';
+import {
+  AlertTickerParamDto,
+  CreateAlertDto,
+  GetAlertsQueryDto,
+  PaginationQueryDto,
+  UpdateAlertDto,
+} from './dtos';
 import { AlertService } from './alert.service';
 
 @Controller('alerts')
@@ -39,6 +45,20 @@ export class AlertController {
       page: query.page ?? 1,
       limit: query.limit ?? 10,
       status: query.status,
+    });
+  }
+
+  @Get('coin/:ticker')
+  @ApiOperation({ summary: 'Get alerts by coin ticker' })
+  @ApiOkResponse({ description: 'Paginated list of alerts for the coin' })
+  findAllByTicker(
+    @Param() params: AlertTickerParamDto,
+    @Query() query: PaginationQueryDto,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    return this.alertService.findAllByTicker(request.user!.sub, params.ticker, {
+      page: query.page ?? 1,
+      limit: query.limit ?? 10,
     });
   }
 
