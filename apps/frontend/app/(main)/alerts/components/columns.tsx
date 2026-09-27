@@ -140,7 +140,9 @@ export const alertsColumns = columnHelper.columns([
     ),
     cell: ({ getValue }) => (
       <div className="text-muted-foreground">
-        {new Date(getValue() as string | Date).toLocaleDateString()}
+        {getValue()
+          ? new Date(getValue() as string | Date).toLocaleDateString()
+          : 'Never'}
       </div>
     ),
   }),
