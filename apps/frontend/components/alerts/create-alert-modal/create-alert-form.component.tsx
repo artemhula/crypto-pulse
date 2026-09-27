@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { FieldGroup } from '@/components/ui/field';
@@ -14,6 +14,7 @@ import { useCreateAlertModal } from './create-alert-modal.provider';
 import { ExpirationField } from './expiration-field.component';
 import { createAlert, CreateAlertInput } from '@/lib/alerts';
 import { getCoins } from '@/lib/coins/get-coins';
+import { alertKeys } from '@/components/alerts/alert-query-keys';
 import { type AlertCondition } from '@/types/alert.type';
 import { type Coin } from '@/types/coin.type';
 
@@ -23,6 +24,7 @@ interface CreateAlertFormProps {
 
 export const CreateAlertForm = ({ coin }: CreateAlertFormProps) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { closeModal } = useCreateAlertModal();
   const [chosenCoin, setChosenCoin] = useState<Coin | undefined>(coin);
   const [targetPrice, setTargetPrice] = useState<number | undefined>(undefined);
@@ -36,8 +38,9 @@ export const CreateAlertForm = ({ coin }: CreateAlertFormProps) => {
   });
   const mutation = useMutation({
     mutationFn: (input: CreateAlertInput) => createAlert(input),
-    onSuccess: () => {
+    onSuccess: async () => {
       closeModal();
+      await queryClient.invalidateQueries({ queryKey: alertKeys.all });
       router.refresh();
     },
   });
