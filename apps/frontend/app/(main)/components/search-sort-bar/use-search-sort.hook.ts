@@ -41,7 +41,7 @@ export const useSearchSort = <T extends Record<string, unknown>>({
     );
   }, [initialData, searchTerm, orderOption]);
 
-  const handleSort = (field: keyof T, order: Order) =>
+  const handleSort = ({ field, order }: OrderOption<T>) =>
     setOrderOption({ field, order });
 
   const handleSearch = (term?: string) => setSearchTerm(term);
