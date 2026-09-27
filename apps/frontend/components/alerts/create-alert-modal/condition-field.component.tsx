@@ -25,7 +25,11 @@ export const ConditionField = ({
   return (
     <Field>
       <Label htmlFor="condition">Condition</Label>
-      <ToggleGroup id="condition" value={[condition]} onValueChange={handleChange}>
+      <ToggleGroup
+        id="condition"
+        value={[condition]}
+        onValueChange={handleChange}
+      >
         <ToggleGroupItem
           value="ABOVE"
           className="text-green-600 bg-green-100 border-green-200 border hover:bg-green-200 hover:text-green-700 hover:scale-105 data-pressed:bg-green-200 data-pressed:border-green-400 data-pressed:scale-105"
