@@ -2,36 +2,39 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { createColumnHelper } from '@tanstack/react-table';
-import { cn } from 'cn';
-import { ArrowDown, ArrowUp, MoreHorizontal, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { MoreHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cancelAlert } from '@/lib/alerts';
-import type { Alert, AlertStatus } from '@/types';
+import { alertKeys } from '@/components/alerts/alert-query-keys';
+import type { Alert } from '@/types';
 import { DataTableColumnHeader } from './data-table-column-header';
 import { type AlertsTableFeatures } from './data-table-features';
+import {
+  AlertConditionLabel,
+  AlertStatusBadge,
+  formatAlertDate,
+  formatTargetPrice,
+} from './alert-status';
 
 const columnHelper = createColumnHelper<AlertsTableFeatures, Alert>();
 
-const STATUS_COLORS: Record<AlertStatus, string> = {
-  ACTIVE: 'text-yellow-600 border-yellow-600/40',
-  TRIGGERED: 'text-green-600 border-green-600/40',
-  EXPIRED: 'text-red-600 border-red-600/40',
-  CANCELLED: 'text-gray-500 border-foreground/15',
-};
-
-const isAfter = (a: string, b: string) => a.localeCompare(b) > 0;
+interface AlertsColumnsOptions {
+  showTicker?: boolean;
+  showActions?: boolean;
+  enableSorting?: boolean;
+}
 
 function AlertRowActions({ alert }: { alert: Alert }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isCancelling, setIsCancelling] = useState(false);
 
   const handleCancel = async () => {
@@ -39,6 +42,7 @@ function AlertRowActions({ alert }: { alert: Alert }) {
     setIsCancelling(true);
     try {
       await cancelAlert(alert.id);
+      await queryClient.invalidateQueries({ queryKey: alertKeys.all });
       router.refresh();
     } catch {
       setIsCancelling(false);
@@ -72,8 +76,12 @@ function AlertRowActions({ alert }: { alert: Alert }) {
   );
 }
 
-export const alertsColumns = columnHelper.columns([
-  columnHelper.accessor('ticker', {
+export const createAlertsColumns = ({
+  showTicker = true,
+  showActions = true,
+  enableSorting = true,
+}: AlertsColumnsOptions = {}) => {
+  const tickerColumn = columnHelper.accessor('ticker', {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Coin" />
     ),
@@ -81,82 +89,65 @@ export const alertsColumns = columnHelper.columns([
       <span className="font-medium uppercase">{getValue()}</span>
     ),
     filterFn: 'includesString',
-  }),
-  columnHelper.accessor('condition', {
+    enableSorting,
+  });
+
+  const conditionColumn = columnHelper.accessor('condition', {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Condition" />
     ),
-    cell: ({ getValue }) => {
-      const condition = getValue();
-      return (
-        <div className="flex items-center gap-1.5 font-medium">
-          {condition === 'ABOVE' ? (
-            <ArrowUp className="size-3 text-green-500" />
-          ) : (
-            <ArrowDown className="size-3 text-red-500" />
-          )}
-          {condition}
-        </div>
-      );
-    },
-    filterFn: 'equalsString',
-  }),
-  columnHelper.accessor('targetPrice', {
+    cell: ({ getValue }) => <AlertConditionLabel condition={getValue()} />,
+    enableSorting,
+  });
+
+  const targetPriceColumn = columnHelper.accessor('targetPrice', {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Target price" />
     ),
-    cell: ({ getValue }) => {
-      const price = getValue();
-      return <div className=" font-medium">${price}</div>;
-    },
-    sortFn: (a, b) =>
-      isAfter(
-        String(a.getValue('targetPrice')),
-        String(b.getValue('targetPrice')),
-      )
-        ? 1
-        : -1,
-  }),
-  columnHelper.accessor('status', {
+    cell: ({ getValue }) => (
+      <div className="font-medium">{formatTargetPrice(getValue())}</div>
+    ),
+    sortFn: (a, b, columnId) =>
+      Number(a.getValue(columnId)) - Number(b.getValue(columnId)),
+    enableSorting,
+  });
+
+  const statusColumn = columnHelper.accessor('status', {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ getValue }) => {
-      const status = getValue();
-      return (
-        <Badge
-          variant="outline"
-          className={cn('border', STATUS_COLORS[status])}
-        >
-          {status}
-        </Badge>
-      );
-    },
-    filterFn: 'equalsString',
-  }),
-  columnHelper.accessor('expiresAt', {
+    cell: ({ getValue }) => <AlertStatusBadge status={getValue()} />,
+    enableSorting,
+  });
+
+  const expiresAtColumn = columnHelper.accessor('expiresAt', {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Expires" />
     ),
-    cell: ({ getValue }) => (
-      <div className="text-muted-foreground">
-        {getValue()
-          ? new Date(getValue() as string | Date).toLocaleDateString()
-          : 'Never'}
-      </div>
-    ),
-  }),
-  columnHelper.accessor('createdAt', {
+    cell: ({ getValue }) => {
+      const value = getValue();
+      return (
+        <div className="text-muted-foreground">
+          {value ? formatAlertDate(value as string | Date) : 'Never'}
+        </div>
+      );
+    },
+    enableSorting,
+  });
+
+  const createdAtColumn = columnHelper.accessor('createdAt', {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Created" />
     ),
     cell: ({ getValue }) => (
       <div className="text-muted-foreground">
-        {new Date(getValue() as string | Date).toLocaleDateString()}
+        {formatAlertDate(getValue() as string | Date)}
       </div>
     ),
-  }),
-  columnHelper.display({
+    enableSorting,
+  });
+
+  const actionsColumn = columnHelper.display({
     id: 'actions',
     header: () => <div className="text-right">Actions</div>,
     cell: ({ row }) => (
@@ -166,5 +157,22 @@ export const alertsColumns = columnHelper.columns([
     ),
     enableSorting: false,
     enableHiding: false,
-  }),
-]);
+  });
+
+  return columnHelper.columns([
+    ...(showTicker ? [tickerColumn] : []),
+    conditionColumn,
+    targetPriceColumn,
+    statusColumn,
+    expiresAtColumn,
+    createdAtColumn,
+    ...(showActions ? [actionsColumn] : []),
+  ]);
+};
+
+export const alertsColumns = createAlertsColumns();
+
+export const alertHistoryColumns = createAlertsColumns({
+  showTicker: false,
+  enableSorting: false,
+});
