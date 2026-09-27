@@ -15,20 +15,33 @@ export class ApiError extends Error {
   }
 }
 
+const buildUrl = (
+  path: string,
+  query?: Record<string, string | number | boolean | null | undefined>,
+): URL => {
+  const url = new URL(`${API_URL}${path.startsWith('/') ? path : `/${path}`}`);
+
+  for (const [key, value] of Object.entries(query ?? {})) {
+    if (value === undefined || value === null || value === '') continue;
+    url.searchParams.set(key, String(value));
+  }
+
+  return url;
+};
+
+const buildBody = (body: unknown): BodyInit | undefined => {
+  if (body === undefined || body === null) return undefined;
+  if (typeof body === 'string' || body instanceof FormData) return body;
+  return JSON.stringify(body);
+};
+
 export async function apiFetch<T>(
   path: string,
   options: ApiFetchOptions = {},
 ): Promise<T> {
   const { query, body, headers, ...rest } = options;
   const isServer = typeof window === 'undefined';
-
-  const url = new URL(
-    `${API_URL.replace(/\/+$/, '')}${path.startsWith('/') ? path : `/${path}`}`,
-  );
-  for (const [key, value] of Object.entries(query ?? {})) {
-    if (value === undefined || value === null || value === '') continue;
-    url.searchParams.set(key, String(value));
-  }
+  const url = buildUrl(path, query);
 
   const finalHeaders = new Headers(headers);
   if (body !== undefined && body !== null && !(body instanceof FormData)) {
@@ -39,18 +52,19 @@ export async function apiFetch<T>(
     finalHeaders.set('Cookie', (await cookies()).toString());
   }
 
-  const res = await fetch(url, {
-    ...rest,
-    headers: finalHeaders,
-    body:
-      typeof body === 'string' || body instanceof FormData
-        ? body
-        : body === undefined || body === null
-          ? undefined
-          : JSON.stringify(body),
-    credentials: isServer ? undefined : 'include',
-    cache: 'no-store',
-  });
+  const send = () =>
+    fetch(url, {
+      ...rest,
+      headers: finalHeaders,
+      body: buildBody(body),
+      credentials: isServer ? undefined : 'include',
+      cache: 'no-store',
+    });
+
+  const res = await send();
+  if (res.status === 401 && !isServer) {
+    window.location.reload();
+  }
 
   if (!res.ok) {
     throw new ApiError(

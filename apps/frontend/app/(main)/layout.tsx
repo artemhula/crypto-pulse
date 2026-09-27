@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import { UserProvider } from '@/context';
 import { getCurrentUser } from '@/lib/auth/get-current-user';
 import { AlertHistoryModalProvider } from '@/components/alerts/alert-history-modal';
@@ -10,6 +11,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
+
+  if (!user) {
+    redirect('/login');
+  }
 
   return (
     <UserProvider initialUser={user}>
