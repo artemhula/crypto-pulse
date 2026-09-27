@@ -3,16 +3,38 @@ import { NextResponse, type NextRequest } from 'next/server';
 const LOGIN = '/login';
 const ACCESS = 'access_token';
 const REFRESH = 'refresh_token';
-const AUTH = (process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/+$/, '');
+const AUTH = process.env.NEXT_PUBLIC_API_URL ?? '';
 
-/** Renew a little early so a render never races the expiry boundary. */
 const SKEW_MS = 60_000;
 
-/** Reads `exp` without verifying. Not a security boundary — the API is. */
-const expiresAt = (jwt: string): number => {
-  const [, payload] = jwt.split('.');
-  const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
-  return JSON.parse(atob(base64)).exp * 1000;
+const expiresAt = (token: string): number | null => {
+  try {
+    const [, payload] = token.split('.');
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(base64)).exp * 1000;
+  } catch {
+    return null;
+  }
+};
+
+const headersWithAccessToken = (
+  request: NextRequest,
+  accessToken: string,
+): Headers => {
+  const headers = new Headers(request.headers);
+
+  headers.set(
+    'Cookie',
+    [
+      ...request.cookies
+        .getAll()
+        .filter((cookie) => cookie.name !== ACCESS)
+        .map((cookie) => `${cookie.name}=${cookie.value}`),
+      `${ACCESS}=${accessToken}`,
+    ].join('; '),
+  );
+
+  return headers;
 };
 
 export async function proxy(request: NextRequest) {
@@ -20,23 +42,19 @@ export async function proxy(request: NextRequest) {
   const refresh = request.cookies.get(REFRESH)?.value;
   const onLogin = request.nextUrl.pathname === LOGIN;
 
-  const valid = access && Date.now() < expiresAt(access) - SKEW_MS;
-  if (valid) {
+  const expiry = access ? expiresAt(access) : null;
+  if (expiry !== null && Date.now() < expiry - SKEW_MS) {
     return onLogin
       ? NextResponse.redirect(new URL('/', request.url))
       : NextResponse.next();
   }
 
-  // Renewal lives here because this is the only point in the request that can
-  // still write cookies for the render that is about to read them. It only
-  // runs when the access token is missing or nearly expired, so the fast path
-  // above stays a pure cookie read.
   const res = refresh
     ? await fetch(`${AUTH}/auth/refresh`, {
         method: 'POST',
         headers: { Cookie: request.headers.get('cookie') ?? '' },
         cache: 'no-store',
-      })
+      }).catch(() => null)
     : null;
 
   const renewed = res?.ok ? ((await res.json()).accessToken as string) : null;
@@ -46,19 +64,7 @@ export async function proxy(request: NextRequest) {
     response = onLogin
       ? NextResponse.redirect(new URL('/', request.url))
       : NextResponse.next({
-          request: {
-            headers: new Headers({
-              ...Object.fromEntries(request.headers),
-              // Hand the rotated token to the render that follows.
-              Cookie: [
-                ...request.cookies
-                  .getAll()
-                  .filter((cookie) => cookie.name !== ACCESS)
-                  .map((cookie) => `${cookie.name}=${cookie.value}`),
-                `${ACCESS}=${renewed}`,
-              ].join('; '),
-            }),
-          },
+          request: { headers: headersWithAccessToken(request, renewed) },
         });
   } else {
     response = onLogin
@@ -66,9 +72,6 @@ export async function proxy(request: NextRequest) {
       : NextResponse.redirect(new URL(LOGIN, request.url));
   }
 
-  // Replayed verbatim, including on failure: the auth service clears the
-  // cookies when it rejects a session, and dropping those headers would leave
-  // the browser retrying a dead refresh token on every request.
   for (const cookie of res?.headers.getSetCookie() ?? []) {
     response.headers.append('Set-Cookie', cookie);
   }

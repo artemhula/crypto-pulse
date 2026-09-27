@@ -101,35 +101,27 @@ export class AuthController {
     this.relayAuthCookies(res, upstream);
 
     if (!upstream?.ok) {
-      // Unreachable auth service: clear locally anyway so the user still gets
-      // out. The stored session then lingers until it expires on its own.
-      for (const name of ['access_token', 'refresh_token']) {
-        res.clearCookie(name, { httpOnly: true, sameSite: 'lax', path: '/' });
-      }
+      res.clearCookie('access_token', {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+      });
+      res.clearCookie('refresh_token', {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+      });
     }
-
     res.status(204).end();
   }
 
-  /**
-   * Forwards a cookie-authenticated call to the auth service, the only owner of
-   * sessions — the same pass-through role the Google OAuth routes already play.
-   * The browser keeps talking to a single origin, so the auth service never has
-   * to be reachable from the client.
-   */
   private postToAuthService(request: Request, action: string) {
     return fetch(`${this.getAuthServiceUrl()}/api/auth/${action}`, {
       method: 'POST',
-      // The refresh cookie has to travel upstream to identify the session.
       headers: { Cookie: request.headers.cookie ?? '' },
     }).catch(() => null);
   }
 
-  /**
-   * Replays the auth service's cookies verbatim, on success and on failure
-   * alike: it is the only authority on their attributes, and dropping the
-   * clearing ones would leave the browser retrying a dead refresh token.
-   */
   private relayAuthCookies(res: ExpressResponse, upstream: Response | null) {
     for (const cookie of upstream?.headers.getSetCookie() ?? []) {
       res.append('Set-Cookie', cookie);
