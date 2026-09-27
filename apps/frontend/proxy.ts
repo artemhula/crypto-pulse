@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 const LOGIN = '/login';
 const ACCESS = 'access_token';
 const REFRESH = 'refresh_token';
-const AUTH = (process.env.NEXT_PUBLIC_AUTH_API_URL ?? '').replace(/\/+$/, '');
+const AUTH = (process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/+$/, '');
 
 /** Renew a little early so a render never races the expiry boundary. */
 const SKEW_MS = 60_000;

@@ -15,7 +15,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Request, Response } from 'express';
+import type { Request, Response as ExpressResponse } from 'express';
 import { JwtAuthGuard, type AuthenticatedRequest } from '../guards';
 import { UserService } from '../services';
 
@@ -73,28 +73,34 @@ export class AuthController {
     };
   }
 
+  @Post('refresh')
+  @ApiOperation({
+    summary: 'Renew the session with the refresh cookie',
+  })
+  async refresh(@Req() request: Request, @Res() res: ExpressResponse) {
+    const upstream = await this.postToAuthService(request, 'refresh');
+    const renewed = upstream?.ok ? await upstream.json() : null;
+
+    this.relayAuthCookies(res, upstream);
+
+    if (!renewed) {
+      res.status(401).json({ message: 'Session expired' });
+      return;
+    }
+
+    res.status(200).json(renewed);
+  }
+
   @Post('logout')
   @ApiOperation({
     summary: 'Log out: revoke the session and clear auth cookies',
   })
-  async logout(@Req() request: Request, @Res() res: Response) {
-    // Sessions belong to the auth service, so this only forwards — the same
-    // pass-through role the Google OAuth routes already play. Cookies travel
-    // both ways: the refresh token has to reach the service to be revoked, and
-    // the clearing `Set-Cookie` has to reach the browser to take effect.
-    const upstream = await fetch(
-      `${this.getAuthServiceUrl()}/api/auth/logout`,
-      {
-        method: 'POST',
-        headers: { Cookie: request.headers.cookie ?? '' },
-      },
-    ).catch(() => null);
+  async logout(@Req() request: Request, @Res() res: ExpressResponse) {
+    const upstream = await this.postToAuthService(request, 'logout');
 
-    if (upstream?.ok) {
-      for (const cookie of upstream.headers.getSetCookie()) {
-        res.append('Set-Cookie', cookie);
-      }
-    } else {
+    this.relayAuthCookies(res, upstream);
+
+    if (!upstream?.ok) {
       // Unreachable auth service: clear locally anyway so the user still gets
       // out. The stored session then lingers until it expires on its own.
       for (const name of ['access_token', 'refresh_token']) {
@@ -103,6 +109,31 @@ export class AuthController {
     }
 
     res.status(204).end();
+  }
+
+  /**
+   * Forwards a cookie-authenticated call to the auth service, the only owner of
+   * sessions — the same pass-through role the Google OAuth routes already play.
+   * The browser keeps talking to a single origin, so the auth service never has
+   * to be reachable from the client.
+   */
+  private postToAuthService(request: Request, action: string) {
+    return fetch(`${this.getAuthServiceUrl()}/api/auth/${action}`, {
+      method: 'POST',
+      // The refresh cookie has to travel upstream to identify the session.
+      headers: { Cookie: request.headers.cookie ?? '' },
+    }).catch(() => null);
+  }
+
+  /**
+   * Replays the auth service's cookies verbatim, on success and on failure
+   * alike: it is the only authority on their attributes, and dropping the
+   * clearing ones would leave the browser retrying a dead refresh token.
+   */
+  private relayAuthCookies(res: ExpressResponse, upstream: Response | null) {
+    for (const cookie of upstream?.headers.getSetCookie() ?? []) {
+      res.append('Set-Cookie', cookie);
+    }
   }
 
   private getAuthServiceUrl() {

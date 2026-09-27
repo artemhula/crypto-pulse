@@ -10,12 +10,8 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   app.use(cookieParser());
   app.set('trust proxy', 1);
-  app.enableCors({
-    origin: (configService.get('FRONTEND_URL') || 'http://localhost:4200')
-      .split(',')
-      .map((url: string) => url.trim()),
-    credentials: true,
-  });
+  // No CORS: the browser never calls this service directly. The api gateway
+  // forwards session calls server side, so auth stays off the public surface.
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   const port = configService.get('PORT') || 3001;
