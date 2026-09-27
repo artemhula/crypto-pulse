@@ -1,7 +1,8 @@
 import { UserProvider } from '@/context';
 import { getCurrentUser } from '@/lib/auth/get-current-user';
-import { Header, Navbar } from './components';
+import { AlertHistoryModalProvider } from '@/components/alerts/alert-history-modal';
 import { CreateAlertModalProvider } from '@/components/alerts/create-alert-modal';
+import { Header, Navbar } from './components';
 
 export default async function RootLayout({
   children,
@@ -13,15 +14,17 @@ export default async function RootLayout({
   return (
     <UserProvider initialUser={user}>
       <CreateAlertModalProvider>
-        <div className="flex h-screen flex-col overflow-hidden">
-          <Header />
-          <div className="flex flex-1 overflow-hidden">
-            <Navbar />
-            <main className="flex-1 overflow-y-auto p-4 pb-20 lg:pb-6">
-              {children}
-            </main>
+        <AlertHistoryModalProvider>
+          <div className="flex h-screen flex-col overflow-hidden">
+            <Header />
+            <div className="flex flex-1 overflow-hidden">
+              <Navbar />
+              <main className="flex-1 overflow-y-auto p-4 pb-20 lg:pb-6">
+                {children}
+              </main>
+            </div>
           </div>
-        </div>
+        </AlertHistoryModalProvider>
       </CreateAlertModalProvider>
     </UserProvider>
   );

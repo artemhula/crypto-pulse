@@ -11,8 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useCreateAlertModal } from '@/components/alerts/';
-import { typenCoin } from '@/types/coin.type';
+import { useAlertHistoryModal, useCreateAlertModal } from '@/components/alerts';
+import type { Coin } from '@/types/coin.type';
 
 interface ActionButtonsProps {
   coin: Coin;
@@ -20,14 +20,15 @@ interface ActionButtonsProps {
 
 export const ActionButtons = ({ coin }: ActionButtonsProps) => {
   const isSmallDevice = useMediaQuery('only screen and (max-width : 768px)');
-  const { openModal } = useCreateAlertModal();
+  const { openModal: openCreateAlertModal } = useCreateAlertModal();
+  const { openModal: openHistoryModal } = useAlertHistoryModal();
 
   const handleCreateAlert = () => {
-    openModal(coin);
+    openCreateAlertModal(coin);
   };
 
   const handleShowAlertHistory = () => {
-    // TODO: Implement show alert history functionality
+    openHistoryModal(coin);
   };
 
   const actions = [
