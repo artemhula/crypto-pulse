@@ -1,11 +1,11 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@crypto-pulse/db';
 import { AmqpConnection, RabbitRPC } from '@golevelup/nestjs-rabbitmq';
 import {
   RabbitExchange,
   RabbitRoutingKey,
 } from '@crypto-pulse/rabbitmq-common';
+import { SessionService, type SessionTokens } from './session.service';
 
 interface OAuthUserPayload {
   email: string;
@@ -15,14 +15,15 @@ interface OAuthUserPayload {
   providerAccountId: string;
 }
 
-export interface AuthResponse {
-  user: {
-    id: string;
-    email: string;
-    name: string | null;
-    avatarUrl: string | null;
-  };
-  accessToken: string;
+interface SessionUser {
+  id: string;
+  email: string;
+  name: string | null;
+  avatarUrl: string | null;
+}
+
+export interface AuthResponse extends SessionTokens {
+  user: SessionUser;
   tokenType: 'Bearer';
 }
 
@@ -38,7 +39,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly amqpConnection: AmqpConnection,
-    private readonly jwtService: JwtService,
+    private readonly sessionService: SessionService,
   ) {}
 
   @RabbitRPC({
@@ -180,20 +181,12 @@ export class AuthService {
     return this.createAuthResponse(user);
   }
 
-  private async createAuthResponse(user: {
-    id: string;
-    email: string;
-    name: string | null;
-    avatarUrl: string | null;
-  }): Promise<AuthResponse> {
-    const accessToken = await this.jwtService.signAsync({
-      sub: user.id,
-      email: user.email,
-    });
+  private async createAuthResponse(user: SessionUser): Promise<AuthResponse> {
+    const tokens = await this.sessionService.issueSession(user);
 
     return {
       user,
-      accessToken,
+      ...tokens,
       tokenType: 'Bearer',
     };
   }

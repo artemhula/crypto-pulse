@@ -6,6 +6,7 @@ import { PrismaModule } from '@crypto-pulse/db';
 import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { SessionService } from './session.service';
 import { GoogleStrategy } from './strategies';
 
 @Module({
@@ -19,9 +20,6 @@ import { GoogleStrategy } from './strategies';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get('JWT_ACCESS_SECRET') || 'dev-jwt-secret',
-        signOptions: {
-          expiresIn: configService.get('JWT_ACCESS_EXPIRES_IN') || '1h',
-        },
       }),
     }),
     RabbitMQModule.forRootAsync({
@@ -44,6 +42,6 @@ import { GoogleStrategy } from './strategies';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy],
+  providers: [AuthService, GoogleStrategy, SessionService],
 })
 export class AuthModule {}
