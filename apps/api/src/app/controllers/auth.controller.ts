@@ -69,6 +69,7 @@ export class AuthController {
         email: user.email,
         name: user.name,
         avatarUrl: user.avatarUrl,
+        telegramChatId: user.telegramChatId,
       },
     };
   }

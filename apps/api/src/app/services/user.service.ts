@@ -17,6 +17,13 @@ export class UserService {
     }
   }
 
+  async unlinkTelegram(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { telegramChatId: null },
+    });
+  }
+
   async findUserById(userId: string) {
     return this.prisma.user.findUnique({ where: { id: userId } });
   }

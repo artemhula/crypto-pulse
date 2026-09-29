@@ -1,4 +1,12 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RabbitRPC } from '@golevelup/nestjs-rabbitmq';
 import {
@@ -25,6 +33,18 @@ export class TelegramController {
       throw new Error('Cannot generate telegram link for unauthenticated user');
     }
     return this.telegramLinkService.generateTelegramLink(req.user.sub);
+  }
+
+  @Delete('link')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Unlink the telegram account' })
+  async unlinkTelegram(@Req() req: AuthenticatedRequest) {
+    if (!req.user) {
+      throw new Error('Cannot unlink telegram for unauthenticated user');
+    }
+    await this.userService.unlinkTelegram(req.user.sub);
   }
 
   @RabbitRPC({
