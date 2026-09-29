@@ -3,6 +3,7 @@ export type User = {
   name: string;
   email: string;
   avatarUrl?: string;
+  telegramChatId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };

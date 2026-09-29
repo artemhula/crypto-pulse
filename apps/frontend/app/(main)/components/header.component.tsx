@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/user.context';
 import { logout } from '@/lib/auth/logout';
@@ -51,7 +52,9 @@ export const Header = () => {
           />
           <DropdownMenuContent className="w-32">
             <DropdownMenuGroup>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem render={<Link href="/settings" />}>
+                Settings
+              </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
