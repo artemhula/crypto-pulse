@@ -10,19 +10,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { TelegramIntegration } from './telegram-integration.component';
-import { DiscordIcon } from './icons/discord-icon.component';
-import { GmailIcon } from './icons/gmail-icon.component';
+import { EmailIntegration } from './email-integration.component';
+import { DiscordIcon } from '@/components/icons/discord-icon.component';
 
 const comingSoon = [
   {
     icon: DiscordIcon,
     name: 'Discord',
     description: 'Receive price alerts in Discord',
-  },
-  {
-    icon: GmailIcon,
-    name: 'Email',
-    description: 'Receive price alerts via email',
   },
 ];
 
@@ -37,6 +32,9 @@ export function IntegrationsCard() {
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <TelegramIntegration />
+
+        <Separator />
+        <EmailIntegration />
 
         {comingSoon.map((item) => (
           <div key={item.name} className="flex flex-col gap-3">

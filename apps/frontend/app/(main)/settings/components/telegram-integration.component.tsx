@@ -17,7 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { TelegramIcon } from './icons';
+import { TelegramIcon } from '@/components/icons';
 
 const userKeys = {
   me: ['auth', 'me'] as const,
