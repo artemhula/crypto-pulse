@@ -1,6 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayNotEmpty,
+  ArrayUnique,
+  IsArray,
   IsDateString,
   IsEnum,
   IsNumber,
@@ -9,7 +13,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { AlertCondition, AlertStatus } from '@crypto-pulse/db';
+import { AlertCondition, AlertStatus, ChannelType } from '@crypto-pulse/db';
 
 export class CreateAlertDto {
   @ApiProperty({ example: 'btc', description: 'Coin symbol (ticker)' })
@@ -39,4 +43,18 @@ export class CreateAlertDto {
   @IsOptional()
   @IsDateString()
   expiresAt?: string;
+
+  @ApiPropertyOptional({
+    enum: ChannelType,
+    isArray: true,
+    example: [ChannelType.TELEGRAM, ChannelType.EMAIL],
+    description: 'Notification channels to deliver this alert through',
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayNotEmpty()
+  @ArrayUnique()
+  @ArrayMaxSize(3)
+  @IsEnum(ChannelType, { each: true })
+  channels?: ChannelType[];
 }

@@ -1,6 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { AlertStatus, PrismaService } from '@crypto-pulse/db';
+import { AlertStatus, ChannelType, PrismaService } from '@crypto-pulse/db';
 import { CreateAlertDto, UpdateAlertDto } from './dtos';
+
+export const DEFAULT_ALERT_CHANNELS: ChannelType[] = [
+  ChannelType.TELEGRAM,
+  ChannelType.EMAIL,
+];
+
+const ALERT_CHANNELS_INCLUDE = {
+  channels: { select: { type: true } },
+} as const;
 
 export interface AlertsQuery {
   page: number;
@@ -48,6 +57,7 @@ export class AlertRepository {
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
+        include: ALERT_CHANNELS_INCLUDE,
       }),
       this.prisma.alert.count({ where }),
       Promise.all(
@@ -89,6 +99,7 @@ export class AlertRepository {
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
+        include: ALERT_CHANNELS_INCLUDE,
       }),
       this.prisma.alert.count({ where }),
     ]);
@@ -105,6 +116,7 @@ export class AlertRepository {
   findByIdAndUserId(id: string, userId: string) {
     return this.prisma.alert.findFirst({
       where: { id, userId },
+      include: ALERT_CHANNELS_INCLUDE,
     });
   }
 
@@ -116,7 +128,13 @@ export class AlertRepository {
         targetPrice: dto.targetPrice,
         condition: dto.condition,
         expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
+        channels: {
+          create: (dto.channels ?? DEFAULT_ALERT_CHANNELS).map((type) => ({
+            type,
+          })),
+        },
       },
+      include: ALERT_CHANNELS_INCLUDE,
     });
   }
 
