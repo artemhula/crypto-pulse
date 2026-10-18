@@ -1,10 +1,11 @@
 import { apiFetch } from '@/lib/api';
-import type { Alert, AlertCondition } from '@/types';
+import type { Alert, AlertChannel, AlertCondition } from '@/types';
 
 export type CreateAlertInput = {
   ticker: string;
   targetPrice: number;
   condition: AlertCondition;
+  channels: AlertChannel[];
   expiresAt?: string;
 };
 

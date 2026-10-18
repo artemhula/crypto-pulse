@@ -2,6 +2,8 @@ export type AlertCondition = 'ABOVE' | 'BELOW';
 
 export type AlertStatus = 'ACTIVE' | 'CANCELLED' | 'TRIGGERED' | 'EXPIRED';
 
+export type AlertChannel = 'TELEGRAM' | 'DISCORD' | 'EMAIL';
+
 export type Alert = {
   id: string;
   userId: string;
@@ -9,6 +11,7 @@ export type Alert = {
   targetPrice: string;
   condition: AlertCondition;
   status: AlertStatus;
+  channels: AlertChannel[];
   createdAt: Date;
   expiresAt?: Date;
 };

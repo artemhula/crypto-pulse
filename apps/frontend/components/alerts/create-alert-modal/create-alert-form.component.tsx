@@ -12,10 +12,11 @@ import { TargetPriceField } from './target-price-field.component';
 import { AlertDetailsCard } from './alert-details-card.component';
 import { useCreateAlertModal } from './create-alert-modal.provider';
 import { ExpirationField } from './expiration-field.component';
+import { ChannelsField } from './channels-field.component';
 import { createAlert, CreateAlertInput } from '@/lib/alerts';
 import { getCoins } from '@/lib/coins/get-coins';
 import { alertKeys } from '@/components/alerts/alert-query-keys';
-import { type AlertCondition } from '@/types/alert.type';
+import { type AlertChannel, type AlertCondition } from '@/types/alert.type';
 import { type Coin } from '@/types/coin.type';
 
 interface CreateAlertFormProps {
@@ -29,6 +30,7 @@ export const CreateAlertForm = ({ coin }: CreateAlertFormProps) => {
   const [chosenCoin, setChosenCoin] = useState<Coin | undefined>(coin);
   const [targetPrice, setTargetPrice] = useState<number | undefined>(undefined);
   const [condition, setCondition] = useState<AlertCondition>('ABOVE');
+  const [channels, setChannels] = useState<AlertChannel[]>(['EMAIL']);
   const [isExpirationEnabled, setIsExpirationEnabled] = useState(true);
   const [date, setDate] = useState<Date | undefined>(undefined);
 
@@ -53,6 +55,7 @@ export const CreateAlertForm = ({ coin }: CreateAlertFormProps) => {
       ticker: chosenCoin.symbol,
       targetPrice,
       condition,
+      channels,
       expiresAt: isExpirationEnabled ? date?.toISOString() : undefined,
     });
   };
@@ -82,6 +85,7 @@ export const CreateAlertForm = ({ coin }: CreateAlertFormProps) => {
           date={date}
           onDateChange={setDate}
         />
+        <ChannelsField channels={channels} onChange={setChannels} />
       </FieldGroup>
       <DialogFooter>
         <Button type="submit">Create alert</Button>

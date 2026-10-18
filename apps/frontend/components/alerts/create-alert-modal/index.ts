@@ -1,4 +1,5 @@
 export * from './alert-details-card.component';
+export * from './channels-field.component';
 export * from './coin-selector.component';
 export * from './condition-field.component';
 export * from './create-alert-form.component';
