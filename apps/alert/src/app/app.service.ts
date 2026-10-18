@@ -1,6 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AmqpConnection, RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
-import { AlertCondition, AlertStatus, PrismaService } from '@crypto-pulse/db';
+import {
+  AlertCondition,
+  AlertStatus,
+  ChannelType,
+  PrismaService,
+} from '@crypto-pulse/db';
 import {
   RabbitExchange,
   RabbitQueue,
@@ -16,6 +21,15 @@ interface PriceUpdate {
 
 interface CryptoUpdatedEvent {
   prices: PriceUpdate[];
+}
+
+interface AlertForDispatch {
+  id: string;
+  ticker: string;
+  targetPrice: unknown;
+  condition: string;
+  user: { email: string; telegramChatId: string | null };
+  channels: { type: ChannelType }[];
 }
 
 @Injectable()
@@ -49,7 +63,10 @@ export class AppService {
         },
         include: {
           user: {
-            select: { telegramChatId: true },
+            select: { email: true, telegramChatId: true },
+          },
+          channels: {
+            select: { type: true },
           },
         },
       });
@@ -58,10 +75,6 @@ export class AppService {
         if (
           !this.hasCrossedLevel(price.previousPrice, price.currentPrice, alert)
         ) {
-          continue;
-        }
-
-        if (!alert.user.telegramChatId) {
           continue;
         }
 
@@ -74,22 +87,105 @@ export class AppService {
           continue;
         }
 
-        await this.amqpConnection.publish(
-          RabbitExchange.Telegram,
-          RabbitRoutingKey.Telegram.SendAlert,
-          {
-            alertId: alert.id,
-            telegramChatId: alert.user.telegramChatId,
-            ticker: alert.ticker,
-            targetPrice: Number(alert.targetPrice),
-            currentPrice: price.currentPrice,
-            condition: alert.condition,
-          },
-        );
+        await this.dispatch(alert, price.currentPrice);
       }
     }
 
     this.logger.log('Alert processing completed');
+  }
+
+  private async dispatch(alert: AlertForDispatch, currentPrice: number) {
+    const enabledChannels = this.resolveChannels(alert);
+
+    if (enabledChannels.size === 0) {
+      this.logger.warn(
+        `Alert ${alert.id} has no supported notification channels, skipping dispatch`,
+      );
+      return;
+    }
+
+    const payloads: {
+      exchange: RabbitExchange;
+      routingKey: string;
+      payload: Record<string, unknown>;
+    }[] = [];
+
+    if (enabledChannels.has(ChannelType.TELEGRAM)) {
+      if (alert.user.telegramChatId) {
+        payloads.push({
+          exchange: RabbitExchange.Telegram,
+          routingKey: RabbitRoutingKey.Telegram.SendAlert,
+          payload: {
+            alertId: alert.id,
+            telegramChatId: alert.user.telegramChatId,
+            ticker: alert.ticker,
+            targetPrice: Number(alert.targetPrice),
+            currentPrice,
+            condition: alert.condition,
+          },
+        });
+      } else {
+        this.logger.warn(
+          `Alert ${alert.id} targets Telegram but the user is not linked, skipping`,
+        );
+      }
+    }
+
+    if (enabledChannels.has(ChannelType.EMAIL)) {
+      payloads.push({
+        exchange: RabbitExchange.Email,
+        routingKey: RabbitRoutingKey.Email.SendAlert,
+        payload: {
+          alertId: alert.id,
+          email: alert.user.email,
+          ticker: alert.ticker,
+          targetPrice: Number(alert.targetPrice),
+          currentPrice,
+          condition: alert.condition,
+        },
+      });
+    }
+
+    const unsupported = [...enabledChannels].filter(
+      (type) => type !== ChannelType.TELEGRAM && type !== ChannelType.EMAIL,
+    );
+
+    if (unsupported.length > 0) {
+      this.logger.warn(
+        `Alert ${alert.id} has unsupported channels: ${unsupported.join(', ')}`,
+      );
+    }
+
+    const results = await Promise.allSettled(
+      payloads.map(({ exchange, routingKey, payload }) =>
+        this.amqpConnection.publish(exchange, routingKey, payload),
+      ),
+    );
+
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        this.logger.error(
+          `Failed to publish ${payloads[index].routingKey} for alert ${alert.id}`,
+          result.reason instanceof Error ? result.reason.stack : undefined,
+        );
+      }
+    });
+  }
+
+  private resolveChannels(alert: AlertForDispatch) {
+    const supported = new Set<ChannelType>([
+      ChannelType.TELEGRAM,
+      ChannelType.EMAIL,
+    ]);
+
+    if (alert.channels.length === 0) {
+      this.logger.warn(
+        `Alert ${alert.id} has no stored channels, falling back to every available channel`,
+      );
+      return supported;
+    }
+
+    return new Set(alert.channels.map(({ type }) => type));
   }
 
   private hasCrossedLevel(

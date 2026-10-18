@@ -42,10 +42,9 @@ export class AppService {
     queueOptions: { durable: true },
   })
   async handleAlert(event: TelegramAlertEvent) {
-    const direction = event.condition === 'ABOVE' ? 'above' : 'below';
     const message = [
       `Crypto Pulse: ${event.ticker.toUpperCase()}`,
-      `Price crossed the level ${direction} ${event.targetPrice}.`,
+      `Price crossed the level ${event.condition.toLowerCase()} ${event.targetPrice}.`,
       `Current price: ${event.currentPrice}`,
     ].join('\n');
 

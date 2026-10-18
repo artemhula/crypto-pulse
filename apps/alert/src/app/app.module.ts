@@ -24,8 +24,12 @@ import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
             name: RabbitExchange.Telegram,
             type: 'topic',
           },
+          {
+            name: RabbitExchange.Email,
+            type: 'topic',
+          },
         ],
-        uri: configService.get('RABBITMQ_URI') || 'amqp://localhost:5672',
+        uri: configService.get('RABBITMQ_URI'),
         connectionInitOptions: { wait: false },
       }),
     }),
