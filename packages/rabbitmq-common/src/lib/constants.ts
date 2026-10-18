@@ -2,6 +2,7 @@ export enum RabbitExchange {
   Auth = 'auth.exchange',
   Crypto = 'crypto.exchange',
   Telegram = 'telegram.exchange',
+  Email = 'email.exchange',
 }
 
 export const RabbitRoutingKey = {
@@ -13,6 +14,9 @@ export const RabbitRoutingKey = {
     Linked: 'telegram.linked',
     SendAlert: 'send_telegram_alert',
   },
+  Email: {
+    SendAlert: 'send_email_alert',
+  },
 } as const;
 
 export enum RabbitQueue {
@@ -21,4 +25,5 @@ export enum RabbitQueue {
   TelegramLinks = 'telegram-links-queue',
   TelegramLinked = 'telegram-linked-queue',
   TelegramAlerts = 'telegram-alerts-queue',
+  EmailAlerts = 'email-alerts-queue',
 }
