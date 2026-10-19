@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { PrismaModule } from '@crypto-pulse/db';
 import { AppService } from './app.service';
@@ -10,6 +11,7 @@ import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     RabbitMQModule.forRootAsync({
       imports: [ConfigModule],
@@ -26,6 +28,10 @@ import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
           },
           {
             name: RabbitExchange.Email,
+            type: 'topic',
+          },
+          {
+            name: RabbitExchange.Push,
             type: 'topic',
           },
         ],

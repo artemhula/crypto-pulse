@@ -120,7 +120,7 @@ export class AlertRepository {
     });
   }
 
-  create(userId: string, dto: CreateAlertDto) {
+  async create(userId: string, dto: CreateAlertDto) {
     return this.prisma.alert.create({
       data: {
         userId,
@@ -138,16 +138,25 @@ export class AlertRepository {
     });
   }
 
-  update(id: string, userId: string, dto: UpdateAlertDto) {
-    return this.prisma.alert.updateMany({
-      where: { id, userId },
-      data: {
-        ticker: dto.ticker?.toLowerCase(),
-        targetPrice: dto.targetPrice,
-        condition: dto.condition,
-        expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
-        status: dto.status,
-      },
+  async update(id: string, userId: string, dto: UpdateAlertDto) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.alert.updateMany({
+        where: { id, userId },
+        data: {
+          ticker: dto.ticker?.toLowerCase(),
+          targetPrice: dto.targetPrice,
+          condition: dto.condition,
+          expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
+          status: dto.status,
+        },
+      });
+
+      if (dto.channels) {
+        await tx.notificationChannel.deleteMany({ where: { alertId: id } });
+        await tx.notificationChannel.createMany({
+          data: dto.channels.map((type) => ({ alertId: id, type })),
+        });
+      }
     });
   }
 

@@ -22,7 +22,7 @@ interface EmailAlertEvent {
 export class AppService {
   private static readonly maxSendAttempts = 3;
   private static readonly permanentErrorNames = new Set([
-    'invalid_api_Key',
+    'invalid_api_key',
     'invalid_access',
     'invalid_from_address',
     'invalid_idempotency_key',
@@ -96,7 +96,9 @@ export class AppService {
         this.logger.error(
           `Failed to send email alert ${event.alertId} after ${attempt} attempts: ${error.name} - ${error.message}`,
         );
-        return;
+        throw new Error(
+          `Failed to send email alert ${event.alertId}: ${error.name} - ${error.message}`,
+        );
       }
 
       const delayMs = 1000 * 2 ** (attempt - 1);

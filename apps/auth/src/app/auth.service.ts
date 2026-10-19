@@ -1,10 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '@crypto-pulse/db';
-import { AmqpConnection, RabbitRPC } from '@golevelup/nestjs-rabbitmq';
-import {
-  RabbitExchange,
-  RabbitRoutingKey,
-} from '@crypto-pulse/rabbitmq-common';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { SessionService, type SessionTokens } from './session.service';
 
 interface OAuthUserPayload {
@@ -27,13 +23,6 @@ export interface AuthResponse extends SessionTokens {
   tokenType: 'Bearer';
 }
 
-type TelegramLinkResponse =
-  | { success: true }
-  | {
-      success: false;
-      reason: 'USER_NOT_FOUND' | 'ALREADY_LINKED' | 'CONFLICT';
-    };
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -41,57 +30,6 @@ export class AuthService {
     private readonly amqpConnection: AmqpConnection,
     private readonly sessionService: SessionService,
   ) {}
-
-  @RabbitRPC({
-    exchange: RabbitExchange.Telegram,
-    routingKey: RabbitRoutingKey.Telegram.Link,
-  })
-  async linkTelegramAccount(payload: {
-    userId: string;
-    telegramId: number;
-    code: string;
-    username?: string;
-    firstName?: string;
-    lastName?: string;
-  }): Promise<TelegramLinkResponse> {
-    const telegramChatId = String(payload.telegramId);
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, telegramChatId: true },
-    });
-
-    if (!user) {
-      return {
-        success: false,
-        reason: 'USER_NOT_FOUND',
-      };
-    }
-
-    if (user.telegramChatId && user.telegramChatId !== telegramChatId) {
-      return {
-        success: false,
-        reason: 'ALREADY_LINKED',
-      };
-    }
-
-    try {
-      await this.prisma.user.update({
-        where: { id: payload.userId },
-        data: {
-          telegramChatId,
-        },
-      });
-    } catch {
-      return {
-        success: false,
-        reason: 'CONFLICT',
-      };
-    }
-
-    return {
-      success: true,
-    };
-  }
 
   async loginOrRegisterOAuth(payload: OAuthUserPayload): Promise<AuthResponse> {
     const userByAccount = await this.findUserByAccount(

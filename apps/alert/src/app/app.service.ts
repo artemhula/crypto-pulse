@@ -25,6 +25,7 @@ interface CryptoUpdatedEvent {
 
 interface AlertForDispatch {
   id: string;
+  userId: string;
   ticker: string;
   targetPrice: unknown;
   condition: string;
@@ -146,8 +147,26 @@ export class AppService {
       });
     }
 
+    if (enabledChannels.has(ChannelType.PUSH)) {
+      payloads.push({
+        exchange: RabbitExchange.Push,
+        routingKey: RabbitRoutingKey.Push.SendAlert,
+        payload: {
+          alertId: alert.id,
+          userId: alert.userId,
+          ticker: alert.ticker,
+          targetPrice: Number(alert.targetPrice),
+          currentPrice,
+          condition: alert.condition,
+        },
+      });
+    }
+
     const unsupported = [...enabledChannels].filter(
-      (type) => type !== ChannelType.TELEGRAM && type !== ChannelType.EMAIL,
+      (type) =>
+        type !== ChannelType.TELEGRAM &&
+        type !== ChannelType.EMAIL &&
+        type !== ChannelType.PUSH,
     );
 
     if (unsupported.length > 0) {
@@ -173,16 +192,10 @@ export class AppService {
   }
 
   private resolveChannels(alert: AlertForDispatch) {
-    const supported = new Set<ChannelType>([
-      ChannelType.TELEGRAM,
-      ChannelType.EMAIL,
-    ]);
-
     if (alert.channels.length === 0) {
       this.logger.warn(
-        `Alert ${alert.id} has no stored channels, falling back to every available channel`,
+        `Alert ${alert.id} has no stored channels, skipping dispatch`,
       );
-      return supported;
     }
 
     return new Set(alert.channels.map(({ type }) => type));

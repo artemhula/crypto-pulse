@@ -11,6 +11,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RabbitRPC } from '@golevelup/nestjs-rabbitmq';
 import {
   RabbitExchange,
+  RabbitQueue,
   RabbitRoutingKey,
 } from '@crypto-pulse/rabbitmq-common';
 import { TelegramLinkService, UserService } from '../services';
@@ -50,7 +51,7 @@ export class TelegramController {
   @RabbitRPC({
     exchange: RabbitExchange.Telegram,
     routingKey: RabbitRoutingKey.Telegram.Link,
-    queue: 'telegram-link',
+    queue: RabbitQueue.TelegramLinks,
   })
   async handleTelegramLink(payload: { userId: string; telegramId: number }) {
     const { userId, telegramId } = payload;
