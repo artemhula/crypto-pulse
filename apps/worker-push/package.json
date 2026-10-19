@@ -1,0 +1,22 @@
+{
+  "name": "@crypto-pulse/worker-push",
+  "private": true,
+  "scripts": {
+    "dev": "nest start --watch --builder swc",
+    "build": "nest build",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@crypto-pulse/db": "*",
+    "@crypto-pulse/rabbitmq-common": "*",
+    "@golevelup/nestjs-rabbitmq": "^9.0.2",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.4",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "@types/web-push": "^3.6.4"
+  }
+}

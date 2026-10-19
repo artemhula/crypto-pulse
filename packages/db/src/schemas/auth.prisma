@@ -10,6 +10,21 @@ model User {
   accounts  Account[]
   sessions  Session[]
   alerts    Alert[]
+  pushSubscriptions PushSubscription[]
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_subscriptions")
 }
 
 model Account {

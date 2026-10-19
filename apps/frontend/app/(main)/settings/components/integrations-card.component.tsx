@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { TelegramIntegration } from './telegram-integration.component';
 import { EmailIntegration } from './email-integration.component';
+import { PushIntegration } from './push-integration.component';
 import { DiscordIcon } from '@/components/icons/discord-icon.component';
 
 const comingSoon = [
@@ -35,6 +36,9 @@ export function IntegrationsCard() {
 
         <Separator />
         <EmailIntegration />
+
+        <Separator />
+        <PushIntegration />
 
         {comingSoon.map((item) => (
           <div key={item.name} className="flex flex-col gap-3">
