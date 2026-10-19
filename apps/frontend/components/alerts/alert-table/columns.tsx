@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { createColumnHelper } from '@tanstack/react-table';
-import { MoreHorizontal, X } from 'lucide-react';
+import { MoreHorizontal, Settings2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cancelAlert } from '@/lib/alerts';
 import { alertKeys } from '@/components/alerts/alert-query-keys';
+import { EditChannelsModal } from '@/components/alerts/edit-channels-modal';
 import type { Alert } from '@/types';
 import { DataTableColumnHeader } from './data-table-column-header';
 import { type AlertsTableFeatures } from './data-table-features';
@@ -36,6 +37,7 @@ function AlertRowActions({ alert }: { alert: Alert }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const handleCancel = async () => {
     if (isCancelling) return;
@@ -54,25 +56,36 @@ function AlertRowActions({ alert }: { alert: Alert }) {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button variant="ghost" className="size-5" aria-label="Open menu" />
-        }
-      >
-        <MoreHorizontal />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem
-          variant="destructive"
-          disabled={isCancelling}
-          onClick={handleCancel}
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button variant="ghost" className="size-5" aria-label="Open menu" />
+          }
         >
-          <X />
-          {isCancelling ? 'Cancelling...' : 'Cancel'}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <MoreHorizontal />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+            <Settings2 />
+            Edit channels
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            variant="destructive"
+            disabled={isCancelling}
+            onClick={handleCancel}
+          >
+            <X />
+            {isCancelling ? 'Cancelling...' : 'Cancel'}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <EditChannelsModal
+        alert={alert}
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+      />
+    </>
   );
 }
 

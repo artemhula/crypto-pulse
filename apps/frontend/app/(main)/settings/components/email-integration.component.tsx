@@ -13,7 +13,7 @@ export function EmailIntegration() {
   return (
     <div className="flex items-center gap-3">
       <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#EA4335]/10">
-        <GmailIcon className="size-5 text-[#EA4335]" />
+        <GmailIcon className="size-5" />
       </div>
       <div className="min-w-0 flex-1">
         <p className="font-medium">Email</p>

@@ -4,13 +4,16 @@ export const GmailIcon = ({ className }: { className?: string }) => {
   return (
     <svg
       role="img"
-      viewBox="0 0 24 24"
+      viewBox="0 0 512 512"
       xmlns="http://www.w3.org/2000/svg"
-      fill="currentColor"
       className={className}
     >
       <title>Gmail</title>
-      <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" />
+      <path d="m76 190v171q0 30 30 30h52V190" fill="#4285f4" />
+      <path d="m354 190v201h52q30 0 30-30V190" fill="#34a853" />
+      <path d="m350 255V149l28-21c24-18 58 2 58 30v32" fill="#fbbc04" />
+      <path d="m154 249V143l102 77 98-74v106l-98 74" fill="#ea4335" />
+      <path d="m76 190v-32c0-29 34-48 58-30l24 18v106" fill="#c5221f" />
     </svg>
   );
 };
