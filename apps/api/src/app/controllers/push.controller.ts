@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Post,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -62,7 +63,9 @@ export class PushController {
     @Body() body: SubscribePushBodyDto,
   ) {
     if (!req.user) {
-      throw new Error('Cannot save push subscription for unauthenticated user');
+      throw new UnauthorizedException(
+        'Cannot save push subscription for unauthenticated user',
+      );
     }
     return this.pushSubscriptionService.subscribe(req.user.sub, body);
   }
@@ -77,7 +80,7 @@ export class PushController {
     @Body() body: UnsubscribePushBodyDto,
   ) {
     if (!req.user) {
-      throw new Error(
+      throw new UnauthorizedException(
         'Cannot remove push subscription for unauthenticated user',
       );
     }

@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -31,7 +32,9 @@ export class TelegramController {
   @ApiOperation({ summary: 'Create url and code for telegram linking' })
   async getTelegramLink(@Req() req: AuthenticatedRequest) {
     if (!req.user) {
-      throw new Error('Cannot generate telegram link for unauthenticated user');
+      throw new UnauthorizedException(
+        'Cannot generate telegram link for unauthenticated user',
+      );
     }
     return this.telegramLinkService.generateTelegramLink(req.user.sub);
   }
@@ -43,7 +46,9 @@ export class TelegramController {
   @ApiOperation({ summary: 'Unlink the telegram account' })
   async unlinkTelegram(@Req() req: AuthenticatedRequest) {
     if (!req.user) {
-      throw new Error('Cannot unlink telegram for unauthenticated user');
+      throw new UnauthorizedException(
+        'Cannot unlink telegram for unauthenticated user',
+      );
     }
     await this.userService.unlinkTelegram(req.user.sub);
   }
