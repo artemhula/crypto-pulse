@@ -23,7 +23,7 @@ export const InfoCards = ({ counts }: InfoCardsProps) => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm h-30">
           <div className="text-muted-foreground">
-            This alerts will trigger notifications when the conditions are met.
+            These alerts will trigger notifications when the conditions are met.
           </div>
         </CardFooter>
       </Card>
@@ -38,7 +38,7 @@ export const InfoCards = ({ counts }: InfoCardsProps) => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm h-30">
           <div className="text-muted-foreground">
-            This alerts have been triggered and notifications have been sent to
+            These alerts have been triggered and notifications have been sent to
             the user.
           </div>
         </CardFooter>
@@ -52,7 +52,7 @@ export const InfoCards = ({ counts }: InfoCardsProps) => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm h-30">
           <div className="text-muted-foreground">
-            This alerts have expired and will not trigger any notifications.
+            These alerts have expired and will not trigger any notifications.
           </div>
         </CardFooter>
       </Card>
@@ -65,7 +65,7 @@ export const InfoCards = ({ counts }: InfoCardsProps) => {
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm h-30">
           <div className="text-muted-foreground">
-            This alerts have been cancelled and will not trigger any
+            These alerts have been cancelled and will not trigger any
             notifications.
           </div>
         </CardFooter>

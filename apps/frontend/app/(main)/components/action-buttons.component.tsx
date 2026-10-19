@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useMediaQuery } from '@uidotdev/usehooks';
 import { Button } from '@/components/ui/button';
 import { BellPlus, ListClock, MoreHorizontalIcon } from 'lucide-react';
 import {
@@ -19,7 +18,6 @@ interface ActionButtonsProps {
 }
 
 export const ActionButtons = ({ coin }: ActionButtonsProps) => {
-  const isSmallDevice = useMediaQuery('only screen and (max-width : 768px)');
   const { openModal: openCreateAlertModal } = useCreateAlertModal();
   const { openModal: openHistoryModal } = useAlertHistoryModal();
 
@@ -46,7 +44,21 @@ export const ActionButtons = ({ coin }: ActionButtonsProps) => {
 
   return (
     <div className="flex gap-2 pt-1">
-      {isSmallDevice ? (
+      <div className="hidden gap-2 md:flex">
+        {actions.map((action) => (
+          <Button
+            key={action.label}
+            variant="outline"
+            size="icon"
+            className="gap-1.5"
+            aria-label={action.label}
+            onClick={action.onClick}
+          >
+            {action.icon}
+          </Button>
+        ))}
+      </div>
+      <div className="md:hidden">
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
@@ -57,7 +69,7 @@ export const ActionButtons = ({ coin }: ActionButtonsProps) => {
           />
           <DropdownMenuContent align="end" className="w-40">
             {actions.map((action, index) => (
-              <React.Fragment key={index}>
+              <React.Fragment key={action.label}>
                 <DropdownMenuItem onClick={action.onClick}>
                   {action.icon}
                   {action.label}
@@ -68,22 +80,7 @@ export const ActionButtons = ({ coin }: ActionButtonsProps) => {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-      ) : (
-        <>
-          {actions.map((action, index) => (
-            <Button
-              key={index}
-              variant="outline"
-              size="icon"
-              className="gap-1.5"
-              aria-label={action.label}
-              onClick={action.onClick}
-            >
-              {action.icon}
-            </Button>
-          ))}
-        </>
-      )}
+      </div>
     </div>
   );
 };

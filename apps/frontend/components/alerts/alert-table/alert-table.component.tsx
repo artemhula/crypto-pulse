@@ -71,10 +71,20 @@ export function AlertTable({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: (updater) => {
+      setPageIndex((prev) => {
+        const next =
+          typeof updater === 'function'
+            ? updater({ pageIndex: prev, pageSize: 10 })
+            : updater;
+        return next.pageIndex;
+      });
+    },
     state: {
       sorting,
       columnFilters,
       columnVisibility,
+      pagination: { pageIndex, pageSize: 10 },
     },
   });
 

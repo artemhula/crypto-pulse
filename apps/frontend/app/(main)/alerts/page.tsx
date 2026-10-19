@@ -1,15 +1,15 @@
 import { getAlerts } from '@/lib/alerts/get-alerts';
 import { InfoCards } from './components/info-cards.component';
-import { AlertTable } from '@/components/alerts/alert-table';
+import { AlertsTable } from './components/alerts-table.component';
 
 export default async function AlertsPage() {
   const alertsResult = await getAlerts();
-  const { items, counts } = alertsResult;
+  const { counts } = alertsResult;
 
   return (
     <>
       <InfoCards counts={counts} />
-      <AlertTable alerts={items} />
+      <AlertsTable initialData={alertsResult} />
     </>
   );
 }

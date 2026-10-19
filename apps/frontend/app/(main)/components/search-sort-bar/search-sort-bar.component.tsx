@@ -21,10 +21,26 @@ const orderOptions: OrderOption<Record<string, unknown>>[] &
   { label: 'Market Cap', field: 'marketCap', order: 'asc' },
   { label: 'Price', field: 'currentPrice', order: 'desc' },
   { label: 'Price', field: 'currentPrice', order: 'asc' },
-  { label: 'Price change (1h)', field: 'priceChange1h', order: 'desc' },
-  { label: 'Price change (1h)', field: 'priceChange1h', order: 'asc' },
-  { label: 'Price change (24h)', field: 'priceChange24h', order: 'desc' },
-  { label: 'Price change (24h)', field: 'priceChange24h', order: 'asc' },
+  {
+    label: 'Price change (1h)',
+    field: 'priceChangePercentage1h',
+    order: 'desc',
+  },
+  {
+    label: 'Price change (1h)',
+    field: 'priceChangePercentage1h',
+    order: 'asc',
+  },
+  {
+    label: 'Price change (24h)',
+    field: 'priceChangePercentage24h',
+    order: 'desc',
+  },
+  {
+    label: 'Price change (24h)',
+    field: 'priceChangePercentage24h',
+    order: 'asc',
+  },
 ];
 
 interface SearchSortBarProps<T extends Record<string, unknown>> {
