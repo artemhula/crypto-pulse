@@ -4,23 +4,25 @@ import { JwtModule } from '@nestjs/jwt';
 import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { PrismaModule } from '@crypto-pulse/db';
 import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
+import { buildJwtModuleOptions } from '@crypto-pulse/nest-common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { SessionService } from './session.service';
 import { GoogleStrategy } from './strategies';
+import { validateEnv } from './config/env.config';
 
 @Module({
   imports: [
     PrismaModule,
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: validateEnv,
     }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get('JWT_ACCESS_SECRET') || 'dev-jwt-secret',
-      }),
+      useFactory: (configService: ConfigService) =>
+        buildJwtModuleOptions(configService),
     }),
     RabbitMQModule.forRootAsync({
       imports: [ConfigModule],

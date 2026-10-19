@@ -6,10 +6,14 @@ import { RedisModule } from '@crypto-pulse/redis';
 import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
 import { CoinModule } from '@crypto-pulse/coin';
 import { CronParserService } from './app.service';
+import { validateEnv } from './config/env.config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({}),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validate: validateEnv,
+    }),
     ScheduleModule.forRoot(),
     CoinModule,
     RedisModule,

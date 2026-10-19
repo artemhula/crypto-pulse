@@ -1,15 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import * as crypto from 'crypto';
 import { type TelegramLink } from '../interfaces';
 
 @Injectable()
 export class TelegramLinkService {
-  constructor(@Inject('REDIS_CLIENT') private readonly redis: Redis) {}
+  constructor(
+    @Inject('REDIS_CLIENT') private readonly redis: Redis,
+    private readonly configService: ConfigService,
+  ) {}
 
   async generateTelegramLink(userId: string): Promise<TelegramLink> {
     const code = await this.createTelegramCode(userId);
-    const botUsername = process.env.TELEGRAM_BOT_USERNAME;
+    const botUsername = this.configService.get('TELEGRAM_BOT_USERNAME');
     return {
       link: `https://t.me/${botUsername}?start=${code}`,
       code,
@@ -28,7 +32,7 @@ export class TelegramLinkService {
     );
 
     if (isSaved !== 'OK') {
-      throw new Error('Сould not save the code. Please try again.');
+      throw new Error('Could not save the code. Please try again.');
     }
 
     return code;

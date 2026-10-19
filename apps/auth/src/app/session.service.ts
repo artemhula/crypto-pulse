@@ -3,6 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '@crypto-pulse/db';
 import {
+  DEFAULT_JWT_ACCESS_SECRET,
+  JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET,
+} from '@crypto-pulse/nest-common';
+import {
   ACCESS_TOKEN_TYPE,
   DEFAULT_ACCESS_EXPIRES_IN,
   DEFAULT_REFRESH_EXPIRES_IN,
@@ -88,13 +93,14 @@ export class SessionService {
 
   private get accessSecret(): string {
     return (
-      this.configService.get<string>('JWT_ACCESS_SECRET') || 'dev-jwt-secret'
+      this.configService.get<string>(JWT_ACCESS_SECRET) ||
+      DEFAULT_JWT_ACCESS_SECRET
     );
   }
 
   private get refreshSecret(): string {
     return (
-      this.configService.get<string>('JWT_REFRESH_SECRET') || this.accessSecret
+      this.configService.get<string>(JWT_REFRESH_SECRET) || this.accessSecret
     );
   }
 

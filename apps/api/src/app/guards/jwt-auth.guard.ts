@@ -6,10 +6,13 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import {
+  ACCESS_TOKEN_COOKIE,
+  ACCESS_TOKEN_TYPE,
+  DEFAULT_JWT_ACCESS_SECRET,
+  JWT_ACCESS_SECRET,
+} from '@crypto-pulse/nest-common';
 import type { Request } from 'express';
-
-const ACCESS_TOKEN_COOKIE = 'access_token';
-const ACCESS_TOKEN_TYPE = 'access';
 
 export interface JwtPayload {
   sub: string;
@@ -38,7 +41,7 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     const secret =
-      this.configService.get('JWT_ACCESS_SECRET') || 'dev-jwt-secret';
+      this.configService.get(JWT_ACCESS_SECRET) || DEFAULT_JWT_ACCESS_SECRET;
 
     let payload: unknown;
     try {

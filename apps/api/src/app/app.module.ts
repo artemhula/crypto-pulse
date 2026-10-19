@@ -6,6 +6,7 @@ import { CoinModule } from '@crypto-pulse/coin';
 import { RedisModule } from '@crypto-pulse/redis';
 import { PrismaModule } from '@crypto-pulse/db';
 import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
+import { buildJwtModuleOptions } from '@crypto-pulse/nest-common';
 import {
   AuthController,
   CoinsController,
@@ -21,18 +22,19 @@ import {
 } from './services';
 import { JwtAuthGuard } from './guards';
 import { AlertModule } from './alerts/alert.module';
+import { validateEnv } from './config/env.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: validateEnv,
     }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get('JWT_ACCESS_SECRET') || 'dev-jwt-secret',
-      }),
+      useFactory: (configService: ConfigService) =>
+        buildJwtModuleOptions(configService),
     }),
     RabbitMQModule.forRootAsync({
       imports: [ConfigModule],

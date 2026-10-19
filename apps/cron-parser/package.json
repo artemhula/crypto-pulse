@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@crypto-pulse/coin": "*",
+    "@crypto-pulse/nest-common": "*",
     "@crypto-pulse/rabbitmq-common": "*",
     "@crypto-pulse/redis": "*",
     "@golevelup/nestjs-rabbitmq": "^9.0.2",

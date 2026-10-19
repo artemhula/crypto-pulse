@@ -16,6 +16,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { Request, Response as ExpressResponse } from 'express';
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+} from '@crypto-pulse/nest-common';
 import { JwtAuthGuard, type AuthenticatedRequest } from '../guards';
 import { UserService } from '../services';
 
@@ -102,12 +106,12 @@ export class AuthController {
     this.relayAuthCookies(res, upstream);
 
     if (!upstream?.ok) {
-      res.clearCookie('access_token', {
+      res.clearCookie(ACCESS_TOKEN_COOKIE, {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
       });
-      res.clearCookie('refresh_token', {
+      res.clearCookie(REFRESH_TOKEN_COOKIE, {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',

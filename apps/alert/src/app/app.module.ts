@@ -5,11 +5,13 @@ import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { PrismaModule } from '@crypto-pulse/db';
 import { AppService } from './app.service';
 import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
+import { validateEnv } from './config/env.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: validateEnv,
     }),
     ScheduleModule.forRoot(),
     PrismaModule,
