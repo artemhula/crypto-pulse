@@ -5,11 +5,13 @@ import { RedisModule } from '@crypto-pulse/redis';
 import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
 import { TelegrafModule } from 'nestjs-telegraf';
 import { AppService } from './app.service';
+import { validateEnv } from './config/env.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: validateEnv,
     }),
     TelegrafModule.forRootAsync({
       imports: [ConfigModule],

@@ -6,6 +6,11 @@ import {
   RabbitQueue,
   RabbitRoutingKey,
 } from '@crypto-pulse/rabbitmq-common';
+import {
+  DEFAULT_MAX_SEND_ATTEMPTS,
+  exponentialBackoffDelay,
+  sleep,
+} from '@crypto-pulse/nest-common';
 import { ConfigService } from '@nestjs/config';
 import { renderAlertEmail } from './templates/alert-email.template';
 
@@ -20,7 +25,7 @@ interface EmailAlertEvent {
 
 @Injectable()
 export class AppService {
-  private static readonly maxSendAttempts = 3;
+  private static readonly maxSendAttempts = DEFAULT_MAX_SEND_ATTEMPTS;
   private static readonly permanentErrorNames = new Set([
     'invalid_api_key',
     'invalid_access',
@@ -101,15 +106,11 @@ export class AppService {
         );
       }
 
-      const delayMs = 1000 * 2 ** (attempt - 1);
+      const delayMs = exponentialBackoffDelay(attempt);
       this.logger.warn(
         `Retrying email alert ${event.alertId} in ${delayMs}ms (${error.name})`,
       );
-      await this.delay(delayMs);
+      await sleep(delayMs);
     }
-  }
-
-  private delay(delayMs: number) {
-    return new Promise<void>((resolve) => setTimeout(resolve, delayMs));
   }
 }

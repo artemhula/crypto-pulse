@@ -4,11 +4,13 @@ import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 import { ResendModule } from 'nestjs-resend';
 import { RabbitExchange } from '@crypto-pulse/rabbitmq-common';
 import { AppService } from './app.service';
+import { validateEnv } from './config/env.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: validateEnv,
     }),
     ResendModule.forRootAsync({
       imports: [ConfigModule],

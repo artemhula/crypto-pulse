@@ -6,6 +6,12 @@ import {
   RabbitQueue,
   RabbitRoutingKey,
 } from '@crypto-pulse/rabbitmq-common';
+import {
+  DEFAULT_MAX_SEND_ATTEMPTS,
+  computeRetryDelay,
+  getErrorStatusCode,
+  sleep,
+} from '@crypto-pulse/nest-common';
 import { ConfigService } from '@nestjs/config';
 import * as webpush from 'web-push';
 
@@ -20,7 +26,7 @@ interface PushAlertEvent {
 
 @Injectable()
 export class AppService implements OnModuleInit {
-  private static readonly maxSendAttempts = 3;
+  private static readonly maxSendAttempts = DEFAULT_MAX_SEND_ATTEMPTS;
   private readonly logger = new Logger(AppService.name);
 
   constructor(
@@ -105,7 +111,7 @@ export class AppService implements OnModuleInit {
         );
         return;
       } catch (error) {
-        const statusCode = this.getStatusCode(error);
+        const statusCode = getErrorStatusCode(error);
 
         if (statusCode === 404 || statusCode === 410) {
           await this.prisma.pushSubscription.delete({
@@ -125,54 +131,16 @@ export class AppService implements OnModuleInit {
           return;
         }
 
-        if (statusCode === 429) {
-          const retryAfterSec = this.getRetryAfterSeconds(error) ?? 10;
-          this.logger.warn(
-            `Rate limited, waiting ${retryAfterSec}s before retrying push ${subscription.id}`,
-          );
-          await this.delay(retryAfterSec * 1000);
-          continue;
-        }
-
-        const delayMs = 1000 * 2 ** (attempt - 1);
+        const delayMs = computeRetryDelay(attempt, error, {
+          statusCode,
+          rateLimitStatus: 429,
+          fallbackRateLimitDelayMs: 10_000,
+        });
         this.logger.warn(
           `Retrying push alert ${event.alertId} in ${delayMs}ms (status ${statusCode})`,
         );
-        await this.delay(delayMs);
+        await sleep(delayMs);
       }
     }
-  }
-
-  private getStatusCode(error: unknown): number | undefined {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'statusCode' in error &&
-      typeof (error as { statusCode: unknown }).statusCode === 'number'
-    ) {
-      return (error as { statusCode: number }).statusCode;
-    }
-    return undefined;
-  }
-
-  private getRetryAfterSeconds(error: unknown): number | undefined {
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'headers' in error &&
-      typeof (error as { headers: unknown }).headers === 'object'
-    ) {
-      const headers = (error as { headers: Record<string, string> }).headers;
-      const retryAfter = headers['retry-after'];
-      if (retryAfter) {
-        const seconds = Number(retryAfter);
-        if (!Number.isNaN(seconds)) return seconds;
-      }
-    }
-    return undefined;
-  }
-
-  private delay(delayMs: number) {
-    return new Promise<void>((resolve) => setTimeout(resolve, delayMs));
   }
 }

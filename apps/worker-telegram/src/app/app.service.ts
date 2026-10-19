@@ -11,6 +11,11 @@ import {
   RabbitQueue,
   RabbitRoutingKey,
 } from '@crypto-pulse/rabbitmq-common';
+import {
+  DEFAULT_MAX_SEND_ATTEMPTS,
+  exponentialBackoffDelay,
+  sleep,
+} from '@crypto-pulse/nest-common';
 
 interface TelegramAlertEvent {
   alertId: string;
@@ -24,7 +29,7 @@ interface TelegramAlertEvent {
 @Update()
 @Injectable()
 export class AppService {
-  private static readonly maxSendAttempts = 3;
+  private static readonly maxSendAttempts = DEFAULT_MAX_SEND_ATTEMPTS;
   private static readonly minSendIntervalMs = 40;
   private readonly logger = new Logger(AppService.name);
   private lastSendAt = 0;
@@ -80,12 +85,12 @@ export class AppService {
         const retryAfter = this.getRetryAfterSeconds(error);
         const delayMs = retryAfter
           ? retryAfter * 1000
-          : 1000 * 2 ** (attempt - 1);
+          : exponentialBackoffDelay(attempt);
 
         this.logger.warn(
           `Retrying Telegram alert ${event.alertId} in ${delayMs}ms`,
         );
-        await this.delay(delayMs);
+        await sleep(delayMs);
       }
     }
   }
@@ -95,7 +100,7 @@ export class AppService {
     const delayMs = Math.max(0, AppService.minSendIntervalMs - elapsed);
 
     if (delayMs > 0) {
-      await this.delay(delayMs);
+      await sleep(delayMs);
     }
 
     this.lastSendAt = Date.now();
@@ -140,10 +145,6 @@ export class AppService {
             : undefined,
       },
     };
-  }
-
-  private delay(delayMs: number) {
-    return new Promise<void>((resolve) => setTimeout(resolve, delayMs));
   }
 
   @On('text')
