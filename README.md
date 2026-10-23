@@ -47,12 +47,39 @@ Built on an asynchronous, event-driven microservices architecture inside a Turbo
 
 ---
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center">
+      <strong>Dashboard</strong><br />
+      <img src="docs/screenshots/screenshot_dashboard.png" alt="Crypto Pulse dashboard" width="420" />
+    </td>
+    <td align="center">
+      <strong>Alerts</strong><br />
+      <img src="docs/screenshots/screenshot_alerts.png" alt="Crypto Pulse alerts list" width="420" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Create alert</strong><br />
+      <img src="docs/screenshots/screenshot_modal.png" alt="Crypto Pulse create alert dialog" width="420" />
+    </td>
+    <td align="center">
+      <strong>Settings</strong><br />
+      <img src="docs/screenshots/screenshot_settings.png" alt="Crypto Pulse settings" width="420" />
+    </td>
+  </tr>
+</table>
+
+---
+
 ## 🏗 System Architecture
 
 The following diagram illustrates the microservices topology, backing data stores, message broker, and external APIs:
 
 <div align="center">
-  <img src="docs/architecture.svg" alt="Crypto Pulse Microservices Architecture" width="100%" />
+  <img src="docs/diagrams/architecture.svg" alt="Crypto Pulse Microservices Architecture" width="100%" />
 </div>
 
 ---
