@@ -12,6 +12,8 @@ import Redis from 'ioredis';
         return new Redis({
           host: configService.get('REDIS_HOST') || 'localhost',
           port: Number(configService.get('REDIS_PORT')) || 6379,
+          password: configService.get('REDIS_PASSWORD'),
+          tls: configService.get('REDIS_TLS') === 'true' ? {} : undefined,
           connectTimeout: 500,
           maxRetriesPerRequest: 1,
         });
