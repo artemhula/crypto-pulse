@@ -14,6 +14,7 @@ async function bootstrap() {
   const isProduction = configService.get('NODE_ENV') === 'production';
   const allowedOrigins = isProduction
     ? [
+        'https://www.artemhula.dev',
         'https://artemhula.dev',
         'https://auth.artemhula.dev',
         'https://api.artemhula.dev',
