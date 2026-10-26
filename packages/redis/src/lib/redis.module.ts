@@ -18,15 +18,18 @@ import Redis from 'ioredis';
           password: configService.get('REDIS_PASSWORD'),
           tls: configService.get('REDIS_TLS') === 'true' ? {} : undefined,
           connectTimeout: 10000,
-          keepAlive: 10000,
+          keepAlive: 30000,
+          family: 4,
+          enableOfflineQueue: true,
           maxRetriesPerRequest: null,
           retryStrategy(times) {
-            return Math.min(times * 100, 3000);
+            return Math.min(times * 200, 5000);
           },
         });
 
         client.on('error', (err) => {
-          logger.warn(`Redis connection event: ${err.message}`);
+          if (err.message.includes('ECONNRESET')) return;
+          logger.warn(`Redis error: ${err.message}`);
         });
 
         return client;
