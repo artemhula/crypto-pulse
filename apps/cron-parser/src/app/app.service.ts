@@ -14,13 +14,21 @@ import { TOKENS_QUERY } from './constants/tokens.contstant';
 @Injectable()
 export class CronParserService {
   private readonly coingeckoApiUrl;
+  private readonly coingeckoApiKey;
+  private readonly coingeckoApiKeyHeader;
+
   constructor(
-    private configService: ConfigService,
-    private coinRepository: CoinRepository,
+    private readonly configService: ConfigService,
+    private readonly coinRepository: CoinRepository,
     private readonly amqpConnection: AmqpConnection,
   ) {
     this.coingeckoApiUrl =
       this.configService.get<string>('COINGECKO_API_URL') ?? '';
+    this.coingeckoApiKey =
+      this.configService.get<string>('COINGECKO_API_KEY') ?? '';
+    this.coingeckoApiKeyHeader =
+      this.configService.get<string>('COINGECKO_API_KEY_HEADER') ??
+      'x-cg-demo-api-key';
   }
   private readonly logger = new Logger(CronParserService.name);
 
@@ -28,7 +36,11 @@ export class CronParserService {
   async updateCryptoPrices() {
     const url = this.coingeckoApiUrl + '&symbols=' + TOKENS_QUERY;
     try {
-      const response = await axios.get<ICoinGeckoCoin[]>(url);
+      const response = await axios.get<ICoinGeckoCoin[]>(url, {
+        headers: this.coingeckoApiKey
+          ? { [this.coingeckoApiKeyHeader]: this.coingeckoApiKey }
+          : undefined,
+      });
       this.logger.log('Fetching crypto prices...');
 
       const priceUpdates = await this.updateCoins(response.data);

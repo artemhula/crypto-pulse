@@ -5,6 +5,11 @@ export const ENV_RULES = {
   REDIS_HOST: optional('REDIS_HOST', 'localhost'),
   REDIS_PORT: optional('REDIS_PORT', '6379'),
   COINGECKO_API_URL: optional('COINGECKO_API_URL', ''),
+  COINGECKO_API_KEY: optional('COINGECKO_API_KEY', ''),
+  COINGECKO_API_KEY_HEADER: optional(
+    'COINGECKO_API_KEY_HEADER',
+    'x-cg-demo-api-key',
+  ),
 };
 
 export const validateEnv = createEnvValidator(ENV_RULES);
