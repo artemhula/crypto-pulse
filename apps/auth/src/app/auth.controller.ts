@@ -100,6 +100,10 @@ export class AuthController {
     return this.configService.get('NODE_ENV') === 'production';
   }
 
+  private get cookieDomain(): string | undefined {
+    return this.secureCookies ? '.artemhula.dev' : undefined;
+  }
+
   private setAuthCookies(
     res: Response,
     tokens: {
@@ -113,6 +117,7 @@ export class AuthController {
       httpOnly: true,
       sameSite: 'lax',
       secure: this.secureCookies,
+      domain: this.cookieDomain,
       path: AUTH_COOKIE_PATH,
       maxAge: tokens.accessTokenMaxAgeMs,
     });
@@ -120,6 +125,7 @@ export class AuthController {
       httpOnly: true,
       sameSite: 'lax',
       secure: this.secureCookies,
+      domain: this.cookieDomain,
       path: AUTH_COOKIE_PATH,
       maxAge: tokens.refreshTokenMaxAgeMs,
     });
@@ -129,6 +135,7 @@ export class AuthController {
     const options = {
       httpOnly: true,
       sameSite: 'lax' as const,
+      domain: this.cookieDomain,
       secure: this.secureCookies,
       path: AUTH_COOKIE_PATH,
     };

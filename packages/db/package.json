@@ -13,7 +13,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run db:generate && tsc",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev"
   },

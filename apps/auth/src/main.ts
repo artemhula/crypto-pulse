@@ -10,8 +10,22 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   app.use(cookieParser());
   app.set('trust proxy', 1);
-  // No CORS: the browser never calls this service directly. The api gateway
-  // forwards session calls server side, so auth stays off the public surface.
+  const isProduction = configService.get('NODE_ENV') === 'production';
+  const allowedOrigins = isProduction
+    ? [
+        'https://artemhula.dev',
+        'https://auth.artemhula.dev',
+        'https://api.artemhula.dev',
+      ]
+    : [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:4200',
+      ];
+  app.enableCors({
+    origin: allowedOrigins,
+    credentials: true,
+  });
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   const port = configService.get('PORT') || 3001;

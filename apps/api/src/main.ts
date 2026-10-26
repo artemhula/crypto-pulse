@@ -11,8 +11,20 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   app.use(cookieParser());
   app.set('trust proxy', 1);
+  const isProduction = configService.get('NODE_ENV') === 'production';
+  const allowedOrigins = isProduction
+    ? [
+        'https://artemhula.dev',
+        'https://auth.artemhula.dev',
+        'https://api.artemhula.dev',
+      ]
+    : [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:4200',
+      ];
   app.enableCors({
-    origin: configService.get('FRONTEND_URL') || 'http://localhost:4200',
+    origin: allowedOrigins,
     credentials: true,
   });
   app.useGlobalPipes(
