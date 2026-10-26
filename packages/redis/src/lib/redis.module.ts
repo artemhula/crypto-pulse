@@ -15,7 +15,7 @@ import Redis from 'ioredis';
           password: configService.get('REDIS_PASSWORD'),
           tls: configService.get('REDIS_TLS') === 'true' ? {} : undefined,
           connectTimeout: 500,
-          maxRetriesPerRequest: 1,
+          maxRetriesPerRequest: null,
         });
       },
     },
