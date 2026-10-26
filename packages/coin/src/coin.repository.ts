@@ -52,21 +52,17 @@ export class CoinRepository {
 
   async findAll() {
     const cacheKey = 'coin:all';
+    const coins = await this.prisma.coin.findMany();
 
     try {
-      const cachedCoins = await this.redis.get(cacheKey);
-      if (cachedCoins) {
-        return JSON.parse(cachedCoins);
-      }
+      await this.redis.set(cacheKey, JSON.stringify(coins));
     } catch (error) {
-      this.logger.error(
-        `[REDIS] Error occurred while fetching all coins`,
+      this.logger.warn(
+        '[REDIS] Could not refresh all-coins cache; returning database data',
         error,
       );
     }
-    const coins = await this.prisma.coin.findMany();
 
-    await this.redis.set(cacheKey, JSON.stringify(coins));
     return coins;
   }
 

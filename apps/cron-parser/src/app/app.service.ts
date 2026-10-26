@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq/lib/amqp/connection';
@@ -12,10 +12,11 @@ import { ICoinGeckoCoin } from './interfaces';
 import { TOKENS_QUERY } from './constants/tokens.contstant';
 
 @Injectable()
-export class CronParserService {
-  private readonly coingeckoApiUrl;
-  private readonly coingeckoApiKey;
-  private readonly coingeckoApiKeyHeader;
+export class CronParserService implements OnModuleInit {
+  private readonly logger = new Logger(CronParserService.name);
+  private readonly coingeckoApiUrl: string;
+  private readonly coingeckoApiKey: string;
+  private readonly coingeckoApiKeyHeader: string;
 
   constructor(
     private readonly configService: ConfigService,
@@ -30,13 +31,17 @@ export class CronParserService {
       this.configService.get<string>('COINGECKO_API_KEY_HEADER') ??
       'x-cg-demo-api-key';
   }
-  private readonly logger = new Logger(CronParserService.name);
+  async onModuleInit(): Promise<void> {
+    await this.updateCryptoPrices();
+  }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async updateCryptoPrices() {
-    const url = this.coingeckoApiUrl + '&symbols=' + TOKENS_QUERY;
     try {
-      const response = await axios.get<ICoinGeckoCoin[]>(url, {
+      const url = new URL(this.coingeckoApiUrl);
+      url.searchParams.set('symbols', TOKENS_QUERY);
+      url.searchParams.set('price_change_percentage', '1h,24h');
+      const response = await axios.get<ICoinGeckoCoin[]>(url.toString(), {
         headers: this.coingeckoApiKey
           ? { [this.coingeckoApiKeyHeader]: this.coingeckoApiKey }
           : undefined,
@@ -51,8 +56,23 @@ export class CronParserService {
         RabbitRoutingKey.Crypto.Updated,
         { prices: priceUpdates },
       );
-    } catch (e) {
-      this.logger.error('Error fetching crypto prices:', e);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        this.logger.error(
+          `CoinGecko request failed (${error.response?.status ?? 'network error'}): ${
+            typeof error.response?.data === 'string'
+              ? error.response.data
+              : JSON.stringify(error.response?.data ?? error.message)
+          }`,
+        );
+        return;
+      }
+
+      this.logger.error(
+        `Error updating crypto prices: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
   }
 
@@ -73,6 +93,18 @@ export class CronParserService {
       priceChangePercentage24h: coin.price_change_percentage_24h_in_currency,
       image: coin.image,
     }));
+
+    const invalidCoin = coins.find(
+      (coin) =>
+        !Number.isFinite(coin.priceChangePercentage1h) ||
+        !Number.isFinite(coin.priceChangePercentage24h),
+    );
+    if (invalidCoin) {
+      throw new Error(
+        `CoinGecko returned incomplete price changes for ${invalidCoin.id}`,
+      );
+    }
+
     await this.coinRepository.createOrUpdateMany(coins);
 
     return coins.map((coin) => ({

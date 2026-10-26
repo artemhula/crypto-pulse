@@ -20,8 +20,8 @@ import Redis from 'ioredis';
           connectTimeout: 10000,
           keepAlive: 30000,
           family: 4,
-          enableOfflineQueue: true,
-          maxRetriesPerRequest: null,
+          enableOfflineQueue: false,
+          maxRetriesPerRequest: 1,
           retryStrategy(times) {
             return Math.min(times * 200, 5000);
           },
